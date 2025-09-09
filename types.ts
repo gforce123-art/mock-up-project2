@@ -1,4 +1,3 @@
-
 export type Page =
   | 'dashboard'
   | 'car_management'
@@ -22,4 +21,12 @@ export interface Car {
 export interface ReportData {
   name: string;
   value: number;
+}
+
+export interface Customer {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
 }
