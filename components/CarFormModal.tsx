@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import { Car } from '../types';
 import ImagePreview from './ImagePreview';
 
@@ -21,8 +20,7 @@ const CarFormModal: React.FC<CarFormModalProps> = ({ isOpen, onClose, onSave, ca
     status: 'Available',
     imageUrl: '',
   });
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,7 +36,7 @@ const CarFormModal: React.FC<CarFormModalProps> = ({ isOpen, onClose, onSave, ca
           imageUrl: '',
         });
       }
-      setGenerationError(null);
+      setError(null);
     }
   }, [carToEdit, isOpen]);
 
@@ -58,44 +56,11 @@ const CarFormModal: React.FC<CarFormModalProps> = ({ isOpen, onClose, onSave, ca
     }
   };
 
-  const handleGenerateImage = async () => {
-    if (!formData.brand || !formData.model || !formData.year) {
-        setGenerationError('Please fill in Brand, Model, and Year first.');
-        return;
-    }
-    setIsGenerating(true);
-    setGenerationError(null);
-    try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-        const prompt = `Professional, high-quality photograph of a ${formData.year} ${formData.brand} ${formData.model}, studio lighting, on a clean background.`;
-
-        const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: prompt,
-            config: {
-                numberOfImages: 1,
-                outputMimeType: 'image/jpeg',
-                aspectRatio: '16:9',
-            },
-        });
-        
-        const base64ImageBytes = response.generatedImages[0].image.imageBytes;
-        const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
-        setFormData(prev => ({ ...prev, imageUrl }));
-
-    } catch (error) {
-        console.error('Error generating image:', error);
-        setGenerationError('Failed to generate image. Please try again.');
-    } finally {
-        setIsGenerating(false);
-    }
-  };
-
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.imageUrl) {
-        setGenerationError("Please add an image before saving.");
+        setError("Please add an image before saving.");
         return;
     }
     onSave(formData);
@@ -115,10 +80,8 @@ const CarFormModal: React.FC<CarFormModalProps> = ({ isOpen, onClose, onSave, ca
             
             <ImagePreview 
               imageUrl={formData.imageUrl}
-              isGenerating={isGenerating}
-              generationError={generationError}
+              error={error}
               onFileChange={handleFileChange}
-              onGenerateImage={handleGenerateImage}
             />
 
             {/* Form Fields */}
