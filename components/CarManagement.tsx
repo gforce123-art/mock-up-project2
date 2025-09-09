@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Car } from '../types';
 import CarFormModal from './CarFormModal';
@@ -9,7 +8,7 @@ const mockCars: Car[] = [
   { id: 2, brand: 'Honda', model: 'CR-V', year: 2019, price: 28000, status: 'Available', imageUrl: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=400' },
   { id: 3, brand: 'Ford', model: 'Ranger', year: 2021, price: 32000, status: 'Sold', imageUrl: 'https://images.pexels.com/photos/3786091/pexels-photo-3786091.jpeg?auto=compress&cs=tinysrgb&w=400' },
   { id: 4, brand: 'Hyundai', model: 'H1', year: 2018, price: 22000, status: 'Pending', imageUrl: 'https://images.pexels.com/photos/3354648/pexels-photo-3354648.jpeg?auto=compress&cs=tinysrgb&w=400' },
-  { id: 5, brand: 'Isuzu', model: 'D-Max', year: 2022, price: 30000, status: 'Available', imageUrl: 'https://images.pexels.com/photos/2607119/pexels-photo-2607119.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { id: 5, brand: 'Isuzu', model: 'D-Max', year: 2022, price: 30000, status: 'Available', imageUrl: 'https://images.pexels.com/photos/12842263/pexels-photo-12842263.jpeg?auto=compress&cs=tinysrgb&w=400' },
   { id: 6, brand: 'Toyota', model: 'Fortuner', year: 2021, price: 35000, status: 'Available', imageUrl: 'https://images.pexels.com/photos/1429775/pexels-photo-1429775.jpeg?auto=compress&cs=tinysrgb&w=400' },
   { id: 7, brand: 'Ford', model: 'Everest', year: 2020, price: 33000, status: 'Sold', imageUrl: 'https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg?auto=compress&cs=tinysrgb&w=400' },
 ];
