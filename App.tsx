@@ -9,10 +9,17 @@ import QualityControl from './components/QualityControl';
 import Communication from './components/Communication';
 import Reporting from './components/Reporting';
 import SystemMaintenance from './components/SystemMaintenance';
+import TopBar from './components/TopBar';
 import { Page } from './types';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleSetCurrentPage = (page: Page) => {
+    setCurrentPage(page);
+    setIsSidebarOpen(false); // Close sidebar on navigation
+  };
 
   const renderPage = useCallback(() => {
     switch (currentPage) {
@@ -32,19 +39,27 @@ const App: React.FC = () => {
         return <SystemMaintenance />;
       case 'dashboard':
       default:
-        return <Dashboard setCurrentPage={setCurrentPage} />;
+        return <Dashboard setCurrentPage={handleSetCurrentPage} />;
     }
   }, [currentPage]);
 
   return (
-    <div className="flex h-screen bg-gray-900 font-sans">
-      <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      <main className="flex-1 p-6 sm:p-10 overflow-y-auto">
-        <div 
-          className="absolute inset-0 -z-10 h-full w-full bg-gray-900 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-        </div>
-        {renderPage()}
-      </main>
+    <div className="flex h-screen bg-gray-900 font-sans text-gray-100">
+      <Sidebar 
+        currentPage={currentPage} 
+        setCurrentPage={handleSetCurrentPage} 
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
+      />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopBar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto">
+          <div 
+            className="absolute inset-0 -z-10 h-full w-full bg-gray-900 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
+          </div>
+          {renderPage()}
+        </main>
+      </div>
     </div>
   );
 };

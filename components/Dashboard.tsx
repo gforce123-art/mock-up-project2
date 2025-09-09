@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Page } from '../types';
 import CarIcon from './icons/CarIcon';
@@ -52,8 +51,8 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentPage }) => {
             <header className="text-center mb-12">
                 <div className="inline-block bg-blue-600 rounded-2xl p-6 shadow-2xl border-4 border-blue-500">
                     <div className="flex items-center justify-center">
-                        <div className="bg-yellow-400 p-3 rounded-full mr-4">
-                            <span className="font-bold text-black text-2xl">rāt</span>
+                        <div className="bg-blue-700 p-3 rounded-lg mr-4 shadow-inner border-2 border-blue-500">
+                            <span className="font-bold text-white text-2xl tracking-wider">VTN</span>
                         </div>
                         <div>
                             <h1 className="text-4xl font-bold">VTN Motor</h1>

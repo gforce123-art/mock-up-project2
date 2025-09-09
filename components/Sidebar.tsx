@@ -12,9 +12,11 @@ import SettingsIcon from './icons/SettingsIcon';
 interface SidebarProps {
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, setIsOpen }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <i className="fa-solid fa-table-columns"></i> },
     { id: 'car_management', label: 'ຈັດການຂໍ້ມູນລົດ', icon: <CarIcon className="w-5 h-5" /> },
@@ -32,35 +34,56 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
     }`;
   };
 
+  const sidebarClasses = `
+    w-64 flex-shrink-0 bg-gray-800 p-4 flex flex-col
+    fixed inset-y-0 left-0 z-30
+    transform transition-transform duration-300 ease-in-out
+    md:relative md:translate-x-0
+    ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+  `;
+
   return (
-    <aside className="w-64 flex-shrink-0 bg-gray-800 p-4 flex flex-col">
-      <div className="flex items-center mb-8">
-        <div className="bg-yellow-400 p-2 rounded-full mr-3">
-          <span className="font-bold text-black text-lg">rāt</span>
+    <>
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black opacity-50 z-20 md:hidden"
+          onClick={() => setIsOpen(false)}
+        ></div>
+      )}
+
+      <aside className={sidebarClasses}>
+        <div
+          className="flex items-center mb-8 cursor-pointer"
+          onClick={() => setCurrentPage('dashboard')}
+        >
+          <div className="bg-blue-600 p-2 rounded-lg mr-3 shadow-lg border-2 border-blue-500">
+            <span className="font-bold text-white text-lg tracking-wider">VTN</span>
+          </div>
+          <h1 className="text-xl font-bold text-white">VTN Motor</h1>
         </div>
-        <h1 className="text-xl font-bold text-white">VTN Motor</h1>
-      </div>
-      <nav className="flex-1 space-y-2">
-        {navItems.map((item) => (
-          <a
-            key={item.id}
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setCurrentPage(item.id as Page);
-            }}
-            className={getNavItemClass(item.id as Page)}
-          >
-            <span className="mr-3 w-5 text-center">{item.icon}</span>
-            <span>{item.label}</span>
-          </a>
-        ))}
-      </nav>
-      <div className="mt-auto text-center text-gray-500 text-xs">
-        <p>&copy; 2024 VTN Motor</p>
-        <p>Admin Dashboard</p>
-      </div>
-    </aside>
+        <nav className="flex-1 space-y-2">
+          {navItems.map((item) => (
+            <a
+              key={item.id}
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage(item.id as Page);
+              }}
+              className={getNavItemClass(item.id as Page)}
+            >
+              <span className="mr-3 w-5 text-center">{item.icon}</span>
+              <span>{item.label}</span>
+            </a>
+          ))}
+        </nav>
+        <div className="mt-auto text-center text-gray-500 text-xs">
+          <p>&copy; 2024 VTN Motor</p>
+          <p>Admin Dashboard</p>
+        </div>
+      </aside>
+    </>
   );
 };
 
