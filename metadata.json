@@ -1,0 +1,5 @@
+{
+  "name": "VTN Motor Admin Dashboard",
+  "description": "An admin dashboard for VTN Motor, a second-hand car dealership, to manage cars, sales, customers, and view analytics.",
+  "requestFramePermissions": []
+}
