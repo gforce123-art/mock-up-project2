@@ -8,15 +8,17 @@ import CheckIcon from './icons/CheckIcon';
 import CommentIcon from './icons/CommentIcon';
 import ChartIcon from './icons/ChartIcon';
 import SettingsIcon from './icons/SettingsIcon';
+import LogoutIcon from './icons/LogoutIcon';
 
 interface SidebarProps {
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, setIsOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, setIsOpen, onLogout }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <i className="fa-solid fa-table-columns"></i> },
     { id: 'car_management', label: 'ຈັດການຂໍ້ມູນລົດ', icon: <CarIcon className="w-5 h-5" /> },
@@ -28,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, 
     { id: 'system_maintenance', label: 'ບຳລຸງລະບົບ', icon: <SettingsIcon className="w-5 h-5" /> },
   ];
 
-  const getNavItemClass = (page: Page) => {
+  const getNavItemClass = (page?: Page) => {
     return `flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200 ${
       currentPage === page ? 'bg-blue-600 text-white shadow-lg' : ''
     }`;
@@ -78,9 +80,22 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, 
             </a>
           ))}
         </nav>
-        <div className="mt-auto text-center text-gray-500 text-xs">
-          <p>&copy; 2024 VTN Motor</p>
-          <p>Admin Dashboard</p>
+        <div className="mt-auto">
+           <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onLogout();
+              }}
+              className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200"
+            >
+              <span className="mr-3 w-5 text-center"><LogoutIcon className="w-5 h-5" /></span>
+              <span>Logout</span>
+            </a>
+          <div className="mt-4 text-center text-gray-500 text-xs">
+            <p>&copy; 2024 VTN Motor</p>
+            <p>Admin Dashboard</p>
+          </div>
         </div>
       </aside>
     </>

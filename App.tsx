@@ -10,15 +10,26 @@ import Communication from './components/Communication';
 import Reporting from './components/Reporting';
 import SystemMaintenance from './components/SystemMaintenance';
 import TopBar from './components/TopBar';
+import Login from './components/Login';
 import { Page } from './types';
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleSetCurrentPage = (page: Page) => {
     setCurrentPage(page);
     setIsSidebarOpen(false); // Close sidebar on navigation
+  };
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    setCurrentPage('dashboard');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
   };
 
   const renderPage = useCallback(() => {
@@ -43,6 +54,10 @@ const App: React.FC = () => {
     }
   }, [currentPage]);
 
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <div className="flex h-screen bg-gray-900 font-sans text-gray-100">
       <Sidebar 
@@ -50,6 +65,7 @@ const App: React.FC = () => {
         setCurrentPage={handleSetCurrentPage} 
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
+        onLogout={handleLogout}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />

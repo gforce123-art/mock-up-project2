@@ -30,3 +30,13 @@ export interface Customer {
   phone: string;
   email: string;
 }
+
+export interface Message {
+  id: number;
+  senderName: string;
+  senderEmail: string;
+  subject: string;
+  body: string;
+  timestamp: string; // ISO string format
+  status: 'new' | 'read' | 'replied' | 'archived';
+}
