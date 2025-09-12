@@ -40,3 +40,14 @@ export interface Message {
   timestamp: string; // ISO string format
   status: 'new' | 'read' | 'replied' | 'archived';
 }
+
+export interface Sale {
+  id: number;
+  carId: number;
+  carDescription: string;
+  customerId: number;
+  customerName: string;
+  saleDate: string; // ISO string
+  salePrice: number;
+  paymentStatus: 'Pending Deposit' | 'Deposit Paid' | 'Fully Paid' | 'Cancelled';
+}
