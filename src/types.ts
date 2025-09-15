@@ -1,9 +1,8 @@
 export type Page =
-  | 'dashboard'
   | 'car_management'
   | 'sales_management'
   | 'customer_management'
-  | 'quality_control'
+  | 'payment_management'
   | 'communication'
   | 'reporting'
   | 'system_maintenance';
@@ -16,6 +15,20 @@ export interface Car {
   price: number;
   status: 'Available' | 'Sold' | 'Pending';
   imageUrl: string;
+}
+
+export interface Sale {
+  id: number;
+  carId: number;
+  carDescription: string;
+  customerId: number;
+  customerName: string;
+  saleDate: string;
+  salePrice: number;
+  paymentStatus: 'Fully Paid' | 'Deposit Paid' | 'Partial Payment' | 'Pending Deposit' | 'Overdue' | 'Cancelled';
+  depositAmount?: number;
+  depositDate?: string;
+  nextInstallmentDate?: string;
 }
 
 export interface ReportData {
@@ -39,15 +52,4 @@ export interface Message {
   body: string;
   timestamp: string; // ISO string format
   status: 'new' | 'read' | 'replied' | 'archived';
-}
-
-export interface Sale {
-  id: number;
-  carId: number;
-  carDescription: string;
-  customerId: number;
-  customerName: string;
-  saleDate: string; // ISO string
-  salePrice: number;
-  paymentStatus: 'Pending Deposit' | 'Deposit Paid' | 'Fully Paid' | 'Cancelled';
 }

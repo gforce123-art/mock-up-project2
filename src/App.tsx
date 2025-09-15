@@ -1,7 +1,5 @@
-
 import React, { useState, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
 import CarManagement from './components/CarManagement';
 import SalesManagement from './components/SalesManagement';
 import CustomerManagement from './components/CustomerManagement';
@@ -15,7 +13,7 @@ import { Page } from './types';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
+  const [currentPage, setCurrentPage] = useState<Page>('car_management');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleSetCurrentPage = (page: Page) => {
@@ -25,7 +23,7 @@ const App: React.FC = () => {
 
   const handleLogin = () => {
     setIsAuthenticated(true);
-    setCurrentPage('dashboard');
+    setCurrentPage('car_management');
   };
 
   const handleLogout = () => {
@@ -40,7 +38,7 @@ const App: React.FC = () => {
         return <SalesManagement />;
       case 'customer_management':
         return <CustomerManagement />;
-      case 'quality_control':
+      case 'payment_management':
         return <QualityControl />;
       case 'communication':
         return <Communication />;
@@ -48,9 +46,8 @@ const App: React.FC = () => {
         return <Reporting />;
       case 'system_maintenance':
         return <SystemMaintenance />;
-      case 'dashboard':
       default:
-        return <Dashboard setCurrentPage={handleSetCurrentPage} />;
+        return <CarManagement />;
     }
   }, [currentPage]);
 

@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Sale, Car, Customer } from '../types';
 import ConfirmationModal from './ConfirmationModal';
-import ShoppingCartIcon from './icons/ShoppingCartIcon';
 
 // Mock data moved here for component self-containment
 const mockCars: Car[] = [
@@ -21,7 +20,7 @@ const mockCustomers: Customer[] = [
 
 const mockSales: Sale[] = [
   { id: 1, carId: 3, carDescription: 'Ford Ranger 2021', customerId: 1, customerName: 'ທ້າວ ສົມຊາຍ', saleDate: '2024-07-15', salePrice: 32000, paymentStatus: 'Fully Paid' },
-  { id: 2, carId: 4, carDescription: 'Hyundai H1 2018', customerId: 2, customerName: 'ນາງ ຄຳຫລ້າ', saleDate: '2024-07-20', salePrice: 22000, paymentStatus: 'Deposit Paid' },
+  { id: 2, carId: 4, carDescription: 'Hyundai H1 2018', customerId: 2, customerName: 'ນາງ ຄຳຫລ້າ', saleDate: '2024-07-20', salePrice: 22000, paymentStatus: 'Deposit Paid', depositAmount: 5000, depositDate: '2024-07-20', nextInstallmentDate: '2024-08-20' },
   { id: 3, carId: 1, carDescription: 'Toyota Vigo 2020', customerId: 3, customerName: 'ທ້າວ ບຸນມີ', saleDate: '2024-07-28', salePrice: 25500, paymentStatus: 'Pending Deposit' },
 ];
 
@@ -38,8 +37,11 @@ const SaleFormModal: React.FC<{
     carId: '',
     customerId: '',
     saleDate: new Date().toISOString().split('T')[0],
-    salePrice: 0,
+    salePrice: '',
     paymentStatus: 'Pending Deposit',
+    depositAmount: '',
+    depositDate: '',
+    nextInstallmentDate: '',
   });
 
   useEffect(() => {
@@ -52,14 +54,20 @@ const SaleFormModal: React.FC<{
           saleDate: saleToEdit.saleDate,
           salePrice: saleToEdit.salePrice,
           paymentStatus: saleToEdit.paymentStatus,
+          depositAmount: saleToEdit.depositAmount || '',
+          depositDate: saleToEdit.depositDate || '',
+          nextInstallmentDate: saleToEdit.nextInstallmentDate || '',
         });
       } else {
         setFormData({
           carId: '',
           customerId: '',
           saleDate: new Date().toISOString().split('T')[0],
-          salePrice: 0,
+          salePrice: '',
           paymentStatus: 'Pending Deposit',
+          depositAmount: '',
+          depositDate: '',
+          nextInstallmentDate: '',
         });
       }
     }
@@ -68,10 +76,12 @@ const SaleFormModal: React.FC<{
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     let newFormData = { ...formData, [name]: value };
-    if (name === 'carId') {
+    
+    if (name === 'carId' && !saleToEdit) { // Only auto-set price for new sales
       const selectedCar = cars.find(c => c.id === Number(value));
       newFormData.salePrice = selectedCar ? selectedCar.price : 0;
     }
+
     setFormData(newFormData);
   };
   
@@ -86,6 +96,7 @@ const SaleFormModal: React.FC<{
             carDescription: `${selectedCar.brand} ${selectedCar.model} ${selectedCar.year}`,
             customerName: selectedCustomer.name,
             salePrice: Number(formData.salePrice),
+            depositAmount: formData.depositAmount ? Number(formData.depositAmount) : undefined,
         };
         onSave(saleData);
     }
@@ -97,9 +108,9 @@ const SaleFormModal: React.FC<{
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4" onClick={onClose}>
-      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg text-white" onClick={e => e.stopPropagation()}>
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg text-white max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <h2 className="text-xl font-bold p-6 border-b border-gray-700">{saleToEdit ? 'ແກ້ໄຂຂໍ້ມູນການຂາຍ' : 'ເພີ່ມການຂາຍໃໝ່'}</h2>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
             <div>
                 <label className="block mb-2 text-sm font-medium text-gray-300">ເລືອກລົດ</label>
                 <select name="carId" value={formData.carId} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required>
@@ -127,9 +138,23 @@ const SaleFormModal: React.FC<{
                 <select name="paymentStatus" value={formData.paymentStatus} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required>
                     <option value="Pending Deposit">Pending Deposit</option>
                     <option value="Deposit Paid">Deposit Paid</option>
+                    <option value="Partial Payment">Partial Payment</option>
                     <option value="Fully Paid">Fully Paid</option>
+                    <option value="Overdue">Overdue</option>
                     <option value="Cancelled">Cancelled</option>
                 </select>
+            </div>
+            <div>
+                <label className="block mb-2 text-sm font-medium text-gray-300">ຈຳນວນເງິນມັດຈຳ (USD)</label>
+                <input type="number" name="depositAmount" value={formData.depositAmount} onChange={handleChange} placeholder="e.g., 5000" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" />
+            </div>
+            <div>
+                <label className="block mb-2 text-sm font-medium text-gray-300">ວັນທີມັດຈຳ</label>
+                <input type="date" name="depositDate" value={formData.depositDate} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" />
+            </div>
+            <div>
+                <label className="block mb-2 text-sm font-medium text-gray-300">ວັນທີຜ່ອນຄັ້ງຕໍ່ໄປ</label>
+                <input type="date" name="nextInstallmentDate" value={formData.nextInstallmentDate} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" />
             </div>
           <div className="flex justify-end space-x-4 pt-4">
             <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-700 py-2 px-6 rounded-lg">ຍົກເລີກ</button>
@@ -156,7 +181,9 @@ const SalesManagement: React.FC = () => {
         switch (status) {
             case 'Fully Paid': return 'bg-green-500 text-green-100';
             case 'Deposit Paid': return 'bg-blue-500 text-blue-100';
+            case 'Partial Payment': return 'bg-cyan-500 text-cyan-100';
             case 'Pending Deposit': return 'bg-yellow-500 text-yellow-100';
+            case 'Overdue': return 'bg-orange-500 text-orange-100';
             case 'Cancelled': return 'bg-red-500 text-red-100';
         }
     };
@@ -190,7 +217,7 @@ const SalesManagement: React.FC = () => {
         } else {
             const newSale: Sale = {
                 ...saleData,
-                id: Math.max(...sales.map(s => s.id)) + 1,
+                id: sales.length > 0 ? Math.max(...sales.map(s => s.id)) + 1 : 1,
             };
             setSales([newSale, ...sales]);
         }
@@ -210,7 +237,7 @@ const SalesManagement: React.FC = () => {
     const kpiData = useMemo(() => {
         const totalRevenue = sales.filter(s => s.paymentStatus === 'Fully Paid').reduce((acc, s) => acc + s.salePrice, 0);
         const carsSold = sales.filter(s => s.paymentStatus === 'Fully Paid').length;
-        const pendingPayments = sales.filter(s => s.paymentStatus === 'Pending Deposit' || s.paymentStatus === 'Deposit Paid').length;
+        const pendingPayments = sales.filter(s => s.paymentStatus === 'Pending Deposit' || s.paymentStatus === 'Deposit Paid' || s.paymentStatus === 'Partial Payment').length;
         const salesThisMonth = sales.filter(s => new Date(s.saleDate).getMonth() === new Date().getMonth() && new Date(s.saleDate).getFullYear() === new Date().getFullYear()).length;
         return { totalRevenue, carsSold, pendingPayments, salesThisMonth };
     }, [sales]);
@@ -259,7 +286,9 @@ const SalesManagement: React.FC = () => {
                     <option value="All">ທັງໝົດ</option>
                     <option value="Pending Deposit">Pending Deposit</option>
                     <option value="Deposit Paid">Deposit Paid</option>
+                    <option value="Partial Payment">Partial Payment</option>
                     <option value="Fully Paid">Fully Paid</option>
+                    <option value="Overdue">Overdue</option>
                     <option value="Cancelled">Cancelled</option>
                 </select>
             </div>

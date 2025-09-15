@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { Page } from '../types';
 import CarIcon from './icons/CarIcon';
 import ShoppingCartIcon from './icons/ShoppingCartIcon';
 import UserIcon from './icons/UserIcon';
-import CheckIcon from './icons/CheckIcon';
 import CommentIcon from './icons/CommentIcon';
 import ChartIcon from './icons/ChartIcon';
 import SettingsIcon from './icons/SettingsIcon';
@@ -20,11 +18,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, setIsOpen, onLogout }) => {
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <i className="fa-solid fa-table-columns"></i> },
     { id: 'car_management', label: 'ຈັດການຂໍ້ມູນລົດ', icon: <CarIcon className="w-5 h-5" /> },
     { id: 'sales_management', label: 'ຈັດການການຂາຍ', icon: <ShoppingCartIcon className="w-5 h-5" /> },
     { id: 'customer_management', label: 'ຈັດການລູກຄ້າ', icon: <UserIcon className="w-5 h-5" /> },
-    { id: 'quality_control', label: 'ຄວບຄຸມຄຸນນະພາບ', icon: <CheckIcon className="w-5 h-5" /> },
+    { id: 'payment_management', label: 'ການຊຳລະເງິນຄ່າລົດ', icon: <ChartIcon className="w-5 h-5" /> },
     { id: 'communication', label: 'ຈັດການການຕິດຕໍ່', icon: <CommentIcon className="w-5 h-5" /> },
     { id: 'reporting', label: 'ລາຍງານ ແລະ ວິເຄາະ', icon: <ChartIcon className="w-5 h-5" /> },
     { id: 'system_maintenance', label: 'ບຳລຸງລະບົບ', icon: <SettingsIcon className="w-5 h-5" /> },
@@ -57,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, 
       <aside className={sidebarClasses}>
         <div
           className="flex items-center mb-8 cursor-pointer"
-          onClick={() => setCurrentPage('dashboard')}
+          onClick={() => setCurrentPage('car_management')}
         >
           <div className="bg-blue-600 p-2 rounded-lg mr-3 shadow-lg border-2 border-blue-500">
             <span className="font-bold text-white text-lg tracking-wider">VTN</span>

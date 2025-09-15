@@ -40,7 +40,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentPage }) => {
         { id: 'car_management' as Page, title: '1. ຈັດການຂໍ້ມູນລົດ', description: 'ເພີ່ມ, ແກ້ໄຂ, ແລະ ລຶບຂໍ້ມູນລົດ', icon: <CarIcon className="w-7 h-7 text-white"/>, color: 'bg-green-500' },
         { id: 'sales_management' as Page, title: '2. ຈັດການການຂາຍ', description: 'ບັນທຶກການຂາຍ ແລະ ຕິດຕາມການຈ່າຍເງິນ', icon: <ShoppingCartIcon className="w-7 h-7 text-white"/>, color: 'bg-blue-500' },
         { id: 'customer_management' as Page, title: '3. ຈັດການລູກຄ້າ', description: 'ບັນທຶກຂໍ້ມູນລູກຄ້າ ແລະ ນັດໝາຍ', icon: <UserIcon className="w-7 h-7 text-white"/>, color: 'bg-orange-500' },
-        { id: 'quality_control' as Page, title: '4. ຄວບຄຸມຄຸນນະພາບ', description: 'ກວດສອບຂໍ້ມູນ, ຮູບພາບ, ແລະ ລາຄາ', icon: <CheckIcon className="w-7 h-7 text-white"/>, color: 'bg-purple-500' },
+        { id: 'quality_control' as Page, title: '4. ການມັດຈຳ,ການຜ່ອນ', description: 'ຈັດການຂໍ້ມູນການມັດຈຳ ແລະ ຕິດຕາມການຜ່ອນ', icon: <ChartIcon className="w-7 h-7 text-white"/>, color: 'bg-purple-500' },
         { id: 'communication' as Page, title: '5. ຈັດການການຕິດຕໍ່', description: 'ຕອບຄຳຖາມ ແລະ ຕິດຕາມຫຼັງການຂາຍ', icon: <CommentIcon className="w-7 h-7 text-white"/>, color: 'bg-yellow-500' },
         { id: 'reporting' as Page, title: '6. ລາຍງານ ແລະ ວິເຄາະ', description: 'ສະຫຼຸບຍອດຂາຍ ແລະ ວິເຄາະຂໍ້ມູນ', icon: <ChartIcon className="w-7 h-7 text-white"/>, color: 'bg-red-500' },
         { id: 'system_maintenance' as Page, title: '7. ບຳລຸງລະບົບ', description: 'ສຳຮອງຂໍ້ມູນ ແລະ ອັບເດດລະບົບ', icon: <SettingsIcon className="w-7 h-7 text-white"/>, color: 'bg-gray-600' },
