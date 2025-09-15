@@ -181,7 +181,7 @@ const SalesManagement: React.FC = () => {
         switch (status) {
             case 'Fully Paid': return 'bg-green-500 text-green-100';
             case 'Deposit Paid': return 'bg-blue-500 text-blue-100';
-            case 'Partial Payment': return 'bg-cyan-500 text-cyan-100';
+            case 'Partial Payment': return 'bg-teal-500 text-teal-100';
             case 'Pending Deposit': return 'bg-yellow-500 text-yellow-100';
             case 'Overdue': return 'bg-orange-500 text-orange-100';
             case 'Cancelled': return 'bg-red-500 text-red-100';
@@ -304,6 +304,9 @@ const SalesManagement: React.FC = () => {
                             <th className="p-4 text-left font-semibold">ລູກຄ້າ</th>
                             <th className="p-4 text-left font-semibold">ວັນທີຂາຍ</th>
                             <th className="p-4 text-left font-semibold">ລາຄາຂາຍ (USD)</th>
+                            <th className="p-4 text-left font-semibold">ເງິນມັດຈຳ (USD)</th>
+                            <th className="p-4 text-left font-semibold">ວັນທີມັດຈຳ</th>
+                            <th className="p-4 text-left font-semibold">ຜ່ອນຄັ້ງຕໍ່ໄປ</th>
                             <th className="p-4 text-left font-semibold">ສະຖານະການຈ່າຍເງິນ</th>
                             <th className="p-4 text-left font-semibold">ການກະທຳ</th>
                         </tr>
@@ -315,6 +318,9 @@ const SalesManagement: React.FC = () => {
                                 <td className="p-4 whitespace-nowrap">{sale.customerName}</td>
                                 <td className="p-4">{new Date(sale.saleDate).toLocaleDateString()}</td>
                                 <td className="p-4">${sale.salePrice.toLocaleString()}</td>
+                                <td className="p-4 whitespace-nowrap">{sale.depositAmount ? `$${sale.depositAmount.toLocaleString()}` : '-'}</td>
+                                <td className="p-4 whitespace-nowrap">{sale.depositDate ? new Date(sale.depositDate).toLocaleDateString() : '-'}</td>
+                                <td className="p-4 whitespace-nowrap">{sale.nextInstallmentDate ? new Date(sale.nextInstallmentDate).toLocaleDateString() : '-'}</td>
                                 <td className="p-4"><span className={`px-3 py-1 text-xs font-semibold rounded-full ${getPaymentStatusBadge(sale.paymentStatus)}`}>{sale.paymentStatus}</span></td>
                                 <td className="p-4 flex items-center space-x-2">
                                     <button onClick={() => handleEditSale(sale)} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md"><i className="fas fa-pencil-alt"></i></button>
