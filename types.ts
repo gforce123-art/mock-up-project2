@@ -1,4 +1,3 @@
-
 export type Page =
   | 'car_management'
   | 'sales_management'
@@ -18,6 +17,13 @@ export interface Car {
   imageUrl: string;
 }
 
+export interface Installment {
+  dueDate: string;
+  amount: number;
+  status: 'Paid' | 'Pending';
+  paymentDate?: string;
+}
+
 export interface Sale {
   id: number;
   carId: number;
@@ -29,7 +35,7 @@ export interface Sale {
   paymentStatus: 'Fully Paid' | 'Deposit Paid' | 'Partial Payment' | 'Pending Deposit' | 'Overdue' | 'Cancelled';
   depositAmount?: number;
   depositDate?: string;
-  nextInstallmentDate?: string;
+  installments?: Installment[];
 }
 
 export interface ReportData {

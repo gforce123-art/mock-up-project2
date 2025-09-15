@@ -1,8 +1,9 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
-import { Sale, Car, Customer } from '../types';
+import { Sale, Car, Customer, Installment } from '../types';
 import ConfirmationModal from './ConfirmationModal';
 
-// Mock data moved here for component self-containment
+// Mock data for component self-containment
 const mockCars: Car[] = [
   { id: 1, brand: 'Toyota', model: 'Vigo', year: 2020, price: 25000, status: 'Available', imageUrl: '' },
   { id: 2, brand: 'Honda', model: 'CR-V', year: 2019, price: 28000, status: 'Available', imageUrl: '' },
@@ -20,8 +21,31 @@ const mockCustomers: Customer[] = [
 
 const mockSales: Sale[] = [
   { id: 1, carId: 3, carDescription: 'Ford Ranger 2021', customerId: 1, customerName: 'ທ້າວ ສົມຊາຍ', saleDate: '2024-07-15', salePrice: 32000, paymentStatus: 'Fully Paid' },
-  { id: 2, carId: 4, carDescription: 'Hyundai H1 2018', customerId: 2, customerName: 'ນາງ ຄຳຫລ້າ', saleDate: '2024-07-20', salePrice: 22000, paymentStatus: 'Deposit Paid', depositAmount: 5000, depositDate: '2024-07-20', nextInstallmentDate: '2024-08-20' },
+  {
+    id: 2, carId: 4, carDescription: 'Hyundai H1 2018', customerId: 2, customerName: 'ນາງ ຄຳຫລ້າ', saleDate: '2024-07-20', salePrice: 22000, paymentStatus: 'Partial Payment', depositAmount: 5000, depositDate: '2024-07-20',
+    installments: [
+      { dueDate: '2024-08-20', amount: 1700, status: 'Paid', paymentDate: '2024-08-18' },
+      { dueDate: '2024-09-20', amount: 1700, status: 'Pending' },
+      { dueDate: '2024-10-20', amount: 1700, status: 'Pending' },
+    ]
+  },
   { id: 3, carId: 1, carDescription: 'Toyota Vigo 2020', customerId: 3, customerName: 'ທ້າວ ບຸນມີ', saleDate: '2024-07-28', salePrice: 25500, paymentStatus: 'Pending Deposit' },
+  {
+    id: 4, carId: 2, carDescription: 'Honda CR-V 2019', customerId: 1, customerName: 'ທ້າວ ສົມຊາຍ', saleDate: '2024-06-10', salePrice: 28000, paymentStatus: 'Overdue', depositAmount: 4000, depositDate: '2024-06-10',
+    installments: [
+        { dueDate: '2024-07-10', amount: 2400, status: 'Paid', paymentDate: '2024-07-09' },
+        { dueDate: '2024-08-10', amount: 2400, status: 'Pending' }, // This is now overdue
+    ]
+  },
+   {
+    id: 5, carId: 5, carDescription: 'Isuzu D-Max 2022', customerId: 3, customerName: 'ທ້າວ ບຸນມີ', saleDate: '2024-05-05', salePrice: 30000, paymentStatus: 'Partial Payment', depositAmount: 6000, depositDate: '2024-05-05',
+    installments: [
+        { dueDate: '2024-06-05', amount: 2000, status: 'Paid', paymentDate: '2024-06-01' },
+        { dueDate: '2024-07-05', amount: 2000, status: 'Paid', paymentDate: '2024-07-04' },
+        { dueDate: '2024-08-05', amount: 2000, status: 'Paid', paymentDate: '2024-08-05' },
+        { dueDate: '2024-09-05', amount: 2000, status: 'Pending' },
+    ]
+  }
 ];
 
 // Sub-component for the Add/Edit Sale Modal
@@ -41,7 +65,7 @@ const SaleFormModal: React.FC<{
     paymentStatus: 'Pending Deposit',
     depositAmount: '',
     depositDate: '',
-    nextInstallmentDate: '',
+    installments: [],
   });
 
   useEffect(() => {
@@ -56,7 +80,7 @@ const SaleFormModal: React.FC<{
           paymentStatus: saleToEdit.paymentStatus,
           depositAmount: saleToEdit.depositAmount || '',
           depositDate: saleToEdit.depositDate || '',
-          nextInstallmentDate: saleToEdit.nextInstallmentDate || '',
+          installments: saleToEdit.installments ? JSON.parse(JSON.stringify(saleToEdit.installments)) : [], // Deep copy
         });
       } else {
         setFormData({
@@ -67,7 +91,7 @@ const SaleFormModal: React.FC<{
           paymentStatus: 'Pending Deposit',
           depositAmount: '',
           depositDate: '',
-          nextInstallmentDate: '',
+          installments: [],
         });
       }
     }
@@ -75,14 +99,49 @@ const SaleFormModal: React.FC<{
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    let newFormData = { ...formData, [name]: value };
-    
-    if (name === 'carId' && !saleToEdit) { // Only auto-set price for new sales
-      const selectedCar = cars.find(c => c.id === Number(value));
-      newFormData.salePrice = selectedCar ? selectedCar.price : 0;
-    }
+    setFormData(prev => {
+        let newFormData = { ...prev, [name]: value };
+        if (name === 'carId' && !saleToEdit) {
+            const selectedCar = cars.find(c => c.id === Number(value));
+            if (selectedCar) {
+                newFormData.salePrice = selectedCar.price;
+            }
+        }
+        return newFormData;
+    });
+  };
+  
+  const handleInstallmentChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => {
+      const newInstallments = [...prev.installments];
+      const updatedInstallment = { ...newInstallments[index], [name]: name === 'amount' ? Number(value) : value };
 
-    setFormData(newFormData);
+      if (name === 'status' && value === 'Paid' && !updatedInstallment.paymentDate) {
+        updatedInstallment.paymentDate = new Date().toISOString().split('T')[0];
+      }
+      
+      if (name === 'status' && value === 'Pending') {
+        delete updatedInstallment.paymentDate;
+      }
+      
+      newInstallments[index] = updatedInstallment;
+      return { ...prev, installments: newInstallments };
+    });
+  };
+
+  const addInstallment = () => {
+    setFormData((prev: any) => ({
+      ...prev,
+      installments: [...prev.installments, { dueDate: '', amount: 0, status: 'Pending' }]
+    }));
+  };
+
+  const removeInstallment = (index: number) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      installments: prev.installments.filter((_: any, i: number) => i !== index)
+    }));
   };
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -108,58 +167,83 @@ const SaleFormModal: React.FC<{
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4" onClick={onClose}>
-      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg text-white max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl text-white max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <h2 className="text-xl font-bold p-6 border-b border-gray-700">{saleToEdit ? 'ແກ້ໄຂຂໍ້ມູນການຂາຍ' : 'ເພີ່ມການຂາຍໃໝ່'}</h2>
         <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">ເລືອກລົດ</label>
-                <select name="carId" value={formData.carId} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required>
-                    <option value="">-- ເລືອກລົດ --</option>
-                    {availableCars.map(car => <option key={car.id} value={car.id}>{`${car.brand} ${car.model} (${car.year})`}</option>)}
-                </select>
+            {/* Main Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-300">ເລືອກລົດ</label>
+                  <select name="carId" value={formData.carId} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required>
+                      <option value="">-- ເລືອກລົດ --</option>
+                      {availableCars.map(car => <option key={car.id} value={car.id}>{`${car.brand} ${car.model} (${car.year})`}</option>)}
+                  </select>
+              </div>
+              <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-300">ເລືອກລູກຄ້າ</label>
+                  <select name="customerId" value={formData.customerId} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required>
+                      <option value="">-- ເລືອກລູກຄ້າ --</option>
+                      {customers.map(customer => <option key={customer.id} value={customer.id}>{customer.name}</option>)}
+                  </select>
+              </div>
+              <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-300">ວັນທີຂາຍ</label>
+                  <input type="date" name="saleDate" value={formData.saleDate} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required />
+              </div>
+              <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-300">ລາຄາຂາຍ (USD)</label>
+                  <input type="number" name="salePrice" value={formData.salePrice} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required />
+              </div>
+              <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-300">ສະຖານະການຈ່າຍເງິນ</label>
+                  <select name="paymentStatus" value={formData.paymentStatus} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required>
+                      <option value="Pending Deposit">Pending Deposit</option>
+                      <option value="Deposit Paid">Deposit Paid</option>
+                      <option value="Partial Payment">Partial Payment</option>
+                      <option value="Fully Paid">Fully Paid</option>
+                      <option value="Overdue">Overdue</option>
+                      <option value="Cancelled">Cancelled</option>
+                  </select>
+              </div>
+              <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-300">ຈຳນວນເງິນມັດຈຳ (USD)</label>
+                  <input type="number" name="depositAmount" value={formData.depositAmount} onChange={handleChange} placeholder="e.g., 5000" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" />
+              </div>
+               <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-300">ວັນທີມັດຈຳ</label>
+                  <input type="date" name="depositDate" value={formData.depositDate} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" />
+              </div>
             </div>
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">ເລືອກລູກຄ້າ</label>
-                <select name="customerId" value={formData.customerId} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required>
-                    <option value="">-- ເລືອກລູກຄ້າ --</option>
-                    {customers.map(customer => <option key={customer.id} value={customer.id}>{customer.name}</option>)}
-                </select>
+
+            {/* Installments Section */}
+            <div className="border-t border-gray-700 pt-4">
+                <label className="block mb-2 text-sm font-medium text-gray-300">ການຜ່ອນชำระ</label>
+                <div className="space-y-3">
+                    {formData.installments && formData.installments.map((inst: Installment, index: number) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-[1fr_100px_100px_1fr_auto] gap-2 items-center p-2 bg-gray-700/50 rounded-lg">
+                            <input type="date" name="dueDate" value={inst.dueDate} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm" title="Due Date"/>
+                            <input type="number" placeholder="Amount" name="amount" value={inst.amount} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm"/>
+                            <select name="status" value={inst.status} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm">
+                                <option value="Pending">Pending</option>
+                                <option value="Paid">Paid</option>
+                            </select>
+                            {inst.status === 'Paid' ? (
+                                <input type="date" name="paymentDate" value={inst.paymentDate || ''} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm" title="Payment Date"/>
+                            ) : <div className="hidden md:block w-full h-10"></div>}
+                            <button type="button" onClick={() => removeInstallment(index)} className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-md text-xs"><i className="fas fa-trash"></i></button>
+                        </div>
+                    ))}
+                </div>
+                <button type="button" onClick={addInstallment} className="w-full mt-3 bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors duration-300 flex items-center justify-center">
+                    <i className="fas fa-plus mr-2"></i> ເພີ່ມການຜ່ອນ
+                </button>
             </div>
-             <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">ວັນທີຂາຍ</label>
-                <input type="date" name="saleDate" value={formData.saleDate} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required />
+
+            {/* Form Actions */}
+            <div className="flex justify-end space-x-4 pt-4 border-t border-gray-700">
+                <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-700 py-2 px-6 rounded-lg">ຍົກເລີກ</button>
+                <button type="submit" className="bg-blue-600 hover:bg-blue-700 py-2 px-6 rounded-lg">ບັນທຶກ</button>
             </div>
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">ລາຄາຂາຍ (USD)</label>
-                <input type="number" name="salePrice" value={formData.salePrice} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required />
-            </div>
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">ສະຖານະການຈ່າຍເງິນ</label>
-                <select name="paymentStatus" value={formData.paymentStatus} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" required>
-                    <option value="Pending Deposit">Pending Deposit</option>
-                    <option value="Deposit Paid">Deposit Paid</option>
-                    <option value="Partial Payment">Partial Payment</option>
-                    <option value="Fully Paid">Fully Paid</option>
-                    <option value="Overdue">Overdue</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
-            </div>
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">ຈຳນວນເງິນມັດຈຳ (USD)</label>
-                <input type="number" name="depositAmount" value={formData.depositAmount} onChange={handleChange} placeholder="e.g., 5000" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" />
-            </div>
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">ວັນທີມັດຈຳ</label>
-                <input type="date" name="depositDate" value={formData.depositDate} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" />
-            </div>
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">ວັນທີຜ່ອນຄັ້ງຕໍ່ໄປ</label>
-                <input type="date" name="nextInstallmentDate" value={formData.nextInstallmentDate} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3" />
-            </div>
-          <div className="flex justify-end space-x-4 pt-4">
-            <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-700 py-2 px-6 rounded-lg">ຍົກເລີກ</button>
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 py-2 px-6 rounded-lg">ບັນທຶກ</button>
-          </div>
         </form>
       </div>
     </div>
@@ -236,11 +320,33 @@ const SalesManagement: React.FC = () => {
 
     const kpiData = useMemo(() => {
         const totalRevenue = sales.filter(s => s.paymentStatus === 'Fully Paid').reduce((acc, s) => acc + s.salePrice, 0);
-        const carsSold = sales.filter(s => s.paymentStatus === 'Fully Paid').length;
-        const pendingPayments = sales.filter(s => s.paymentStatus === 'Pending Deposit' || s.paymentStatus === 'Deposit Paid' || s.paymentStatus === 'Partial Payment').length;
+        const carsSold = sales.filter(s => s.paymentStatus === 'Fully Paid' || s.paymentStatus === 'Partial Payment' || s.paymentStatus === 'Deposit Paid').length;
+        const pendingPayments = sales.filter(s => s.paymentStatus === 'Pending Deposit' || s.paymentStatus === 'Partial Payment' || s.paymentStatus === 'Overdue').length;
         const salesThisMonth = sales.filter(s => new Date(s.saleDate).getMonth() === new Date().getMonth() && new Date(s.saleDate).getFullYear() === new Date().getFullYear()).length;
         return { totalRevenue, carsSold, pendingPayments, salesThisMonth };
     }, [sales]);
+    
+    const getNextInstallmentInfo = (sale: Sale) => {
+        if (!sale.installments || sale.installments.length === 0) {
+            return '-';
+        }
+        const pendingInstallments = sale.installments
+            .filter(inst => inst.status === 'Pending')
+            .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
+        if (pendingInstallments.length === 0) {
+            const allPaid = sale.installments.every(inst => inst.status === 'Paid');
+            return allPaid ? 'All Installments Paid' : '-';
+        }
+
+        const nextInstallment = pendingInstallments[0];
+        return (
+            <div className="flex flex-col">
+                <span>{new Date(nextInstallment.dueDate).toLocaleDateString()}</span>
+                <span className="text-xs text-gray-400">${nextInstallment.amount.toLocaleString()}</span>
+            </div>
+        );
+    };
 
     const KpiCard: React.FC<{ title: string; value: string; icon: string }> = ({ title, value, icon }) => (
         <div className="bg-gray-800 rounded-xl shadow-2xl p-6 flex items-center">
@@ -320,7 +426,7 @@ const SalesManagement: React.FC = () => {
                                 <td className="p-4">${sale.salePrice.toLocaleString()}</td>
                                 <td className="p-4 whitespace-nowrap">{sale.depositAmount ? `$${sale.depositAmount.toLocaleString()}` : '-'}</td>
                                 <td className="p-4 whitespace-nowrap">{sale.depositDate ? new Date(sale.depositDate).toLocaleDateString() : '-'}</td>
-                                <td className="p-4 whitespace-nowrap">{sale.nextInstallmentDate ? new Date(sale.nextInstallmentDate).toLocaleDateString() : '-'}</td>
+                                <td className="p-4 whitespace-nowrap">{getNextInstallmentInfo(sale)}</td>
                                 <td className="p-4"><span className={`px-3 py-1 text-xs font-semibold rounded-full ${getPaymentStatusBadge(sale.paymentStatus)}`}>{sale.paymentStatus}</span></td>
                                 <td className="p-4 flex items-center space-x-2">
                                     <button onClick={() => handleEditSale(sale)} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md"><i className="fas fa-pencil-alt"></i></button>
