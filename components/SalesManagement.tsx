@@ -45,6 +45,15 @@ const mockSales: Sale[] = [
         { dueDate: '2024-08-05', amount: 2000, status: 'Paid', paymentDate: '2024-08-05' },
         { dueDate: '2024-09-05', amount: 2000, status: 'Pending' },
     ]
+  },
+  {
+    id: 6, carId: 6, carDescription: 'Toyota Fortuner 2021', customerId: 2, customerName: 'ນາງ ຄຳຫລ້າ', saleDate: '2024-08-01', salePrice: 35000, paymentStatus: 'Partial Payment', depositAmount: 7000, depositDate: '2024-08-01',
+    installments: [
+        { dueDate: '2024-09-01', amount: 2800, status: 'Paid', paymentDate: '2024-08-30' },
+        { dueDate: '2024-10-01', amount: 2800, status: 'Paid', paymentDate: '2024-09-28' },
+        { dueDate: '2024-11-01', amount: 2800, status: 'Pending' },
+        { dueDate: '2024-12-01', amount: 2800, status: 'Pending' },
+    ]
   }
 ];
 
@@ -167,7 +176,7 @@ const SaleFormModal: React.FC<{
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4" onClick={onClose}>
-      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl text-white max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl text-white max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <h2 className="text-xl font-bold p-6 border-b border-gray-700">{saleToEdit ? 'ແກ້ໄຂຂໍ້ມູນການຂາຍ' : 'ເພີ່ມການຂາຍໃໝ່'}</h2>
         <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
             {/* Main Details */}
@@ -217,20 +226,34 @@ const SaleFormModal: React.FC<{
 
             {/* Installments Section */}
             <div className="border-t border-gray-700 pt-4">
-                <label className="block mb-2 text-sm font-medium text-gray-300">ການຜ່ອນชำระ</label>
-                <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-gray-200 mb-3">ລາຍການຜ່ອນ</h3>
+                <div className="space-y-4">
                     {formData.installments && formData.installments.map((inst: Installment, index: number) => (
-                        <div key={index} className="grid grid-cols-1 md:grid-cols-[1fr_100px_100px_1fr_auto] gap-2 items-center p-2 bg-gray-700/50 rounded-lg">
-                            <input type="date" name="dueDate" value={inst.dueDate} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm" title="Due Date"/>
-                            <input type="number" placeholder="Amount" name="amount" value={inst.amount} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm"/>
-                            <select name="status" value={inst.status} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm">
-                                <option value="Pending">Pending</option>
-                                <option value="Paid">Paid</option>
-                            </select>
-                            {inst.status === 'Paid' ? (
-                                <input type="date" name="paymentDate" value={inst.paymentDate || ''} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm" title="Payment Date"/>
-                            ) : <div className="hidden md:block w-full h-10"></div>}
-                            <button type="button" onClick={() => removeInstallment(index)} className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-md text-xs"><i className="fas fa-trash"></i></button>
+                        <div key={index} className={`flex flex-wrap gap-4 items-end p-3 rounded-lg ${inst.status === 'Paid' ? 'bg-green-900/40' : 'bg-gray-700/50'}`}>
+                            <div className="flex-1 min-w-[120px]">
+                                <label htmlFor={`dueDate-${index}`} className="block text-xs font-medium text-gray-400 mb-1">ວັນຄົບກຳນົດ</label>
+                                <input id={`dueDate-${index}`} type="date" name="dueDate" value={inst.dueDate} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm disabled:bg-gray-700 disabled:text-gray-400" disabled={inst.status === 'Paid'}/>
+                            </div>
+                             <div className="flex-1 min-w-[100px]">
+                                <label htmlFor={`amount-${index}`} className="block text-xs font-medium text-gray-400 mb-1">ຈຳນວນເງິນ</label>
+                                <input id={`amount-${index}`} type="number" placeholder="Amount" name="amount" value={inst.amount} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm disabled:bg-gray-700 disabled:text-gray-400" disabled={inst.status === 'Paid'}/>
+                            </div>
+                            <div className="flex-1 min-w-[100px]">
+                                <label htmlFor={`status-${index}`} className="block text-xs font-medium text-gray-400 mb-1">ສະຖານະ</label>
+                                <select id={`status-${index}`} name="status" value={inst.status} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Paid">Paid</option>
+                                </select>
+                            </div>
+                            {inst.status === 'Paid' && (
+                                <div className="flex-1 min-w-[120px]">
+                                  <label htmlFor={`paymentDate-${index}`} className="block text-xs font-medium text-gray-400 mb-1">ວັນທີຈ່າຍ</label>
+                                  <input id={`paymentDate-${index}`} type="date" name="paymentDate" value={inst.paymentDate || ''} onChange={e => handleInstallmentChange(index, e)} className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-sm"/>
+                                </div>
+                            )}
+                            <div>
+                                <button type="button" onClick={() => removeInstallment(index)} className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-md h-10 w-10 flex items-center justify-center text-sm" title="Remove Installment"><i className="fas fa-trash"></i></button>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -260,6 +283,7 @@ const SalesManagement: React.FC = () => {
     const [saleToDelete, setSaleToDelete] = useState<Sale | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
+    const [filterDepositStatus, setFilterDepositStatus] = useState('All');
 
     const getPaymentStatusBadge = (status: Sale['paymentStatus']) => {
         switch (status) {
@@ -311,12 +335,25 @@ const SalesManagement: React.FC = () => {
     const filteredSales = useMemo(() => {
         return sales.filter(sale => {
             const matchesStatus = filterStatus === 'All' || sale.paymentStatus === filterStatus;
+            const matchesDepositStatus = filterDepositStatus === 'All' || sale.paymentStatus === filterDepositStatus;
             const matchesSearch = searchTerm === '' ||
                 sale.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 sale.carDescription.toLowerCase().includes(searchTerm.toLowerCase());
-            return matchesStatus && matchesSearch;
+            return matchesStatus && matchesSearch && matchesDepositStatus;
         });
-    }, [sales, searchTerm, filterStatus]);
+    }, [sales, searchTerm, filterStatus, filterDepositStatus]);
+
+    const recentPayments = useMemo(() => {
+      return sales
+          .flatMap(sale => sale.installments?.map(inst => ({ 
+              ...inst, 
+              customerName: sale.customerName, 
+              carDescription: sale.carDescription 
+          })) ?? [])
+          .filter((inst): inst is Installment & { customerName: string; carDescription: string; paymentDate: string } => inst.status === 'Paid' && !!inst.paymentDate)
+          .sort((a, b) => new Date(b.paymentDate!).getTime() - new Date(a.paymentDate!).getTime())
+          .slice(0, 5);
+    }, [sales]);
 
     const kpiData = useMemo(() => {
         const totalRevenue = sales.filter(s => s.paymentStatus === 'Fully Paid').reduce((acc, s) => acc + s.salePrice, 0);
@@ -326,26 +363,31 @@ const SalesManagement: React.FC = () => {
         return { totalRevenue, carsSold, pendingPayments, salesThisMonth };
     }, [sales]);
     
-    const getNextInstallmentInfo = (sale: Sale) => {
-        if (!sale.installments || sale.installments.length === 0) {
-            return '-';
-        }
-        const pendingInstallments = sale.installments
-            .filter(inst => inst.status === 'Pending')
-            .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    const getInstallmentProgressInfo = (sale: Sale) => {
+      if (!sale.installments || sale.installments.length === 0) {
+          return '-';
+      }
+      
+      const total = sale.installments.length;
+      const paidCount = sale.installments.filter(i => i.status === 'Paid').length;
+      const progressText = `(${paidCount}/${total} Paid)`;
 
-        if (pendingInstallments.length === 0) {
-            const allPaid = sale.installments.every(inst => inst.status === 'Paid');
-            return allPaid ? 'All Installments Paid' : '-';
-        }
+      const pendingInstallments = sale.installments
+          .filter(inst => inst.status === 'Pending')
+          .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
-        const nextInstallment = pendingInstallments[0];
-        return (
-            <div className="flex flex-col">
-                <span>{new Date(nextInstallment.dueDate).toLocaleDateString()}</span>
-                <span className="text-xs text-gray-400">${nextInstallment.amount.toLocaleString()}</span>
-            </div>
-        );
+      let nextInstallmentText = 'All Paid';
+      if (pendingInstallments.length > 0) {
+          const next = pendingInstallments[0];
+          nextInstallmentText = `${new Date(next.dueDate).toLocaleDateString()} - $${next.amount.toLocaleString()}`;
+      }
+      
+      return (
+          <div className="flex flex-col">
+              <span className="font-semibold">{nextInstallmentText}</span>
+              <span className="text-xs text-gray-400">{progressText}</span>
+          </div>
+      );
     };
 
     const KpiCard: React.FC<{ title: string; value: string; icon: string }> = ({ title, value, icon }) => (
@@ -398,6 +440,14 @@ const SalesManagement: React.FC = () => {
                     <option value="Cancelled">Cancelled</option>
                 </select>
             </div>
+            <div className="flex items-center">
+                <label htmlFor="deposit-status-filter" className="text-sm font-medium mr-2 text-gray-300">ສະຖານະມັດຈຳ:</label>
+                <select id="deposit-status-filter" value={filterDepositStatus} onChange={e => setFilterDepositStatus(e.target.value)} className="bg-gray-700 border border-gray-600 rounded-lg p-2">
+                    <option value="All">ທັງໝົດ</option>
+                    <option value="Pending Deposit">Pending Deposit</option>
+                    <option value="Deposit Paid">Deposit Paid</option>
+                </select>
+            </div>
         </div>
 
         {/* Sales Table */}
@@ -409,10 +459,9 @@ const SalesManagement: React.FC = () => {
                             <th className="p-4 text-left font-semibold">ລົດ</th>
                             <th className="p-4 text-left font-semibold">ລູກຄ້າ</th>
                             <th className="p-4 text-left font-semibold">ວັນທີຂາຍ</th>
-                            <th className="p-4 text-left font-semibold">ລາຄາຂາຍ (USD)</th>
-                            <th className="p-4 text-left font-semibold">ເງິນມັດຈຳ (USD)</th>
-                            <th className="p-4 text-left font-semibold">ວັນທີມັດຈຳ</th>
-                            <th className="p-4 text-left font-semibold">ຜ່ອນຄັ້ງຕໍ່ໄປ</th>
+                            <th className="p-4 text-left font-semibold">ລາຄາຂາຍ</th>
+                            <th className="p-4 text-left font-semibold">ເງິນມັດຈຳ</th>
+                            <th className="p-4 text-left font-semibold">ຄວາມຄືບໜ້າການຜ່ອນ</th>
                             <th className="p-4 text-left font-semibold">ສະຖານະການຈ່າຍເງິນ</th>
                             <th className="p-4 text-left font-semibold">ການກະທຳ</th>
                         </tr>
@@ -425,8 +474,7 @@ const SalesManagement: React.FC = () => {
                                 <td className="p-4">{new Date(sale.saleDate).toLocaleDateString()}</td>
                                 <td className="p-4">${sale.salePrice.toLocaleString()}</td>
                                 <td className="p-4 whitespace-nowrap">{sale.depositAmount ? `$${sale.depositAmount.toLocaleString()}` : '-'}</td>
-                                <td className="p-4 whitespace-nowrap">{sale.depositDate ? new Date(sale.depositDate).toLocaleDateString() : '-'}</td>
-                                <td className="p-4 whitespace-nowrap">{getNextInstallmentInfo(sale)}</td>
+                                <td className="p-4 whitespace-nowrap">{getInstallmentProgressInfo(sale)}</td>
                                 <td className="p-4"><span className={`px-3 py-1 text-xs font-semibold rounded-full ${getPaymentStatusBadge(sale.paymentStatus)}`}>{sale.paymentStatus}</span></td>
                                 <td className="p-4 flex items-center space-x-2">
                                     <button onClick={() => handleEditSale(sale)} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md"><i className="fas fa-pencil-alt"></i></button>
@@ -437,6 +485,36 @@ const SalesManagement: React.FC = () => {
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        {/* Recent Payment History Table */}
+        <div className="mt-8 bg-gray-800 rounded-xl shadow-2xl overflow-hidden">
+          <h2 className="text-xl font-semibold p-4 bg-gray-700/50">ປະຫວັດການຈ່າຍເງິນຫຼ້າສຸດ</h2>
+          <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                  <thead className="bg-gray-700">
+                      <tr>
+                          <th className="p-4 text-left font-semibold">ວັນທີຈ່າຍ</th>
+                          <th className="p-4 text-left font-semibold">ລູກຄ້າ</th>
+                          <th className="p-4 text-left font-semibold">ລົດ</th>
+                          <th className="p-4 text-left font-semibold">ຈຳນວນ</th>
+                      </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                      {recentPayments.map((inst, index) => (
+                          <tr key={`recent-${index}`} className="hover:bg-gray-700/50">
+                              <td className="p-4 text-green-400">{new Date(inst.paymentDate).toLocaleDateString()}</td>
+                              <td className="p-4">{inst.customerName}</td>
+                              <td className="p-4 text-gray-400">{inst.carDescription}</td>
+                              <td className="p-4">${inst.amount.toLocaleString()}</td>
+                          </tr>
+                      ))}
+                      {recentPayments.length === 0 && (
+                          <tr><td colSpan={4} className="p-4 text-center text-gray-500">ບໍ່ມີປະຫວັດການຈ່າຍເງິນ</td></tr>
+                      )}
+                  </tbody>
+              </table>
+          </div>
         </div>
         
         <SaleFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveSale} saleToEdit={saleToEdit} cars={mockCars} customers={mockCustomers} />
