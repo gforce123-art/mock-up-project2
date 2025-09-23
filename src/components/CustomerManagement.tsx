@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Customer } from '../types';
 import UserIcon from './icons/UserIcon';
@@ -48,6 +47,23 @@ const CustomerManagement: React.FC = () => {
   return (
     <div className="container mx-auto text-white">
       <h1 className="text-3xl font-bold mb-6">ຈັດການລູກຄ້າ</h1>
+
+      {/* Search input field */}
+      <div className="mb-6">
+          <div className="relative max-w-lg">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <i className="fas fa-search text-gray-400"></i>
+              </span>
+              <input
+                  type="text"
+                  placeholder="ຄົ້ນຫາตามຊື່, ເບີໂທ, ຫຼື ອີເມວ..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+          </div>
+      </div>
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Add Customer Form */}
@@ -104,20 +120,6 @@ const CustomerManagement: React.FC = () => {
         
         {/* Customer List */}
         <div className="lg:col-span-2">
-            <div className="mb-4">
-              <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                      <i className="fas fa-search text-gray-400"></i>
-                  </span>
-                  <input
-                      type="text"
-                      placeholder="ຄົ້ນຫາตามຊື່, ເບີໂທ, ຫຼື ອີເມວ..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-              </div>
-            </div>
            <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden">
              <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
