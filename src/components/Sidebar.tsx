@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Page } from '../types';
 import CarIcon from './icons/CarIcon';
@@ -16,8 +17,16 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
+const DashboardIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+    </svg>
+);
+
+
 const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, setIsOpen, onLogout }) => {
   const navItems = [
+    { id: 'dashboard', label: 'ພາບລວມ', icon: <DashboardIcon className="w-5 h-5" /> },
     { id: 'car_management', label: 'ຈັດການຂໍ້ມູນລົດ', icon: <CarIcon className="w-5 h-5" /> },
     { id: 'sales_management', label: 'ຈັດການການຂາຍ', icon: <ShoppingCartIcon className="w-5 h-5" /> },
     { id: 'customer_management', label: 'ຈັດການລູກຄ້າ', icon: <UserIcon className="w-5 h-5" /> },
@@ -54,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, 
       <aside className={sidebarClasses}>
         <div
           className="flex items-center mb-8 cursor-pointer"
-          onClick={() => setCurrentPage('car_management')}
+          onClick={() => setCurrentPage('dashboard')}
         >
           <div className="bg-blue-600 p-2 rounded-lg mr-3 shadow-lg border-2 border-blue-500">
             <span className="font-bold text-white text-lg tracking-wider">VTN</span>

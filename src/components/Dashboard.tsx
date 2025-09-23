@@ -1,9 +1,9 @@
+
 import React from 'react';
 import { Page } from '../types';
 import CarIcon from './icons/CarIcon';
 import ShoppingCartIcon from './icons/ShoppingCartIcon';
 import UserIcon from './icons/UserIcon';
-import CheckIcon from './icons/CheckIcon';
 import CommentIcon from './icons/CommentIcon';
 import ChartIcon from './icons/ChartIcon';
 import SettingsIcon from './icons/SettingsIcon';
@@ -40,7 +40,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentPage }) => {
         { id: 'car_management' as Page, title: '1. ຈັດການຂໍ້ມູນລົດ', description: 'ເພີ່ມ, ແກ້ໄຂ, ແລະ ລຶບຂໍ້ມູນລົດ', icon: <CarIcon className="w-7 h-7 text-white"/>, color: 'bg-green-500' },
         { id: 'sales_management' as Page, title: '2. ຈັດການການຂາຍ', description: 'ບັນທຶກການຂາຍ ແລະ ຕິດຕາມການຈ່າຍເງິນ', icon: <ShoppingCartIcon className="w-7 h-7 text-white"/>, color: 'bg-blue-500' },
         { id: 'customer_management' as Page, title: '3. ຈັດການລູກຄ້າ', description: 'ບັນທຶກຂໍ້ມູນລູກຄ້າ ແລະ ນັດໝາຍ', icon: <UserIcon className="w-7 h-7 text-white"/>, color: 'bg-orange-500' },
-        { id: 'quality_control' as Page, title: '4. ການມັດຈຳ,ການຜ່ອນ', description: 'ຈັດການຂໍ້ມູນການມັດຈຳ ແລະ ຕິດຕາມການຜ່ອນ', icon: <ChartIcon className="w-7 h-7 text-white"/>, color: 'bg-purple-500' },
+        { id: 'payment_management' as Page, title: '4. ການຊຳລະເງິນຄ່າລົດ', description: 'ຕິດຕາມການຊຳລະຄ่างວດ ແລະ ການວາງເງິນມັດຈຳ', icon: <ChartIcon className="w-7 h-7 text-white"/>, color: 'bg-purple-500' },
         { id: 'communication' as Page, title: '5. ຈັດການການຕິດຕໍ່', description: 'ຕອບຄຳຖາມ ແລະ ຕິດຕາມຫຼັງການຂາຍ', icon: <CommentIcon className="w-7 h-7 text-white"/>, color: 'bg-yellow-500' },
         { id: 'reporting' as Page, title: '6. ລາຍງານ ແລະ ວິເຄາະ', description: 'ສະຫຼຸບຍອດຂາຍ ແລະ ວິເຄາະຂໍ້ມູນ', icon: <ChartIcon className="w-7 h-7 text-white"/>, color: 'bg-red-500' },
         { id: 'system_maintenance' as Page, title: '7. ບຳລຸງລະບົບ', description: 'ສຳຮອງຂໍ້ມູນ ແລະ ອັບເດດລະບົບ', icon: <SettingsIcon className="w-7 h-7 text-white"/>, color: 'bg-gray-600' },
@@ -63,14 +63,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentPage }) => {
             </header>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {modules.slice(0, 3).map(m => <ModuleCard key={m.id} {...m} onClick={setCurrentPage} />)}
-                <div className="lg:col-span-1 xl:col-span-1">
-                     <ModuleCard {...modules[3]} onClick={setCurrentPage} />
-                </div>
-
-                <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {modules.slice(4).map(m => <ModuleCard key={m.id} {...m} onClick={setCurrentPage} />)}
-                </div>
+                {modules.map(m => <ModuleCard key={m.id} {...m} onClick={setCurrentPage} />)}
             </div>
         </div>
     );

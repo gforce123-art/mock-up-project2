@@ -1,4 +1,6 @@
+
 export type Page =
+  | 'dashboard'
   | 'car_management'
   | 'sales_management'
   | 'customer_management'

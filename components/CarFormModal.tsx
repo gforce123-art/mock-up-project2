@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Car } from '../types';
 import ImagePreview from './ImagePreview';
@@ -10,6 +11,8 @@ interface CarFormModalProps {
   onSave: (car: CarFormData) => void;
   carToEdit: Car | null;
 }
+
+const BRANDS = ['Toyota', 'Honda', 'Ford', 'Hyundai', 'Isuzu', 'Nissan', 'Mitsubishi', 'Mazda', 'Kia', 'Chevrolet'];
 
 const CarFormModal: React.FC<CarFormModalProps> = ({ isOpen, onClose, onSave, carToEdit }) => {
   const [formData, setFormData] = useState<CarFormData>({
@@ -42,7 +45,14 @@ const CarFormModal: React.FC<CarFormModalProps> = ({ isOpen, onClose, onSave, ca
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: name === 'year' || name === 'price' ? Number(value) : value }));
+    
+    if (name === 'price') {
+      // Allow only numbers and handle empty string for price, removing commas for state
+      const numericValue = value.replace(/[^0-9]/g, '');
+      setFormData(prev => ({ ...prev, [name]: numericValue === '' ? 0 : Number(numericValue) }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: name === 'year' ? Number(value) : value }));
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,15 +96,33 @@ const CarFormModal: React.FC<CarFormModalProps> = ({ isOpen, onClose, onSave, ca
 
             {/* Form Fields */}
             <div className="flex flex-col space-y-4">
-                <input name="brand" value={formData.brand} onChange={handleChange} placeholder="ຍີ່ຫໍ້ (e.g., Toyota)" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                <input name="model" value={formData.model} onChange={handleChange} placeholder="ຮຸ່ນ (e.g., Vios)" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                <input name="year" type="number" value={formData.year} onChange={handleChange} placeholder="ປີ" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                <input name="price" type="number" value={formData.price} onChange={handleChange} placeholder="ລາຄາ (USD)" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                <select name="status" value={formData.status} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                  <option value="Available">Available</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Sold">Sold</option>
-                </select>
+                <div>
+                  <label htmlFor="brand-input" className="block text-sm font-medium text-gray-300 mb-1">ຍີ່ຫໍ້</label>
+                  <input id="brand-input" name="brand" list="brand-list" value={formData.brand} onChange={handleChange} placeholder="e.g., Toyota" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                  <datalist id="brand-list">
+                    {BRANDS.map(b => <option key={b} value={b} />)}
+                  </datalist>
+                </div>
+                <div>
+                  <label htmlFor="model-input" className="block text-sm font-medium text-gray-300 mb-1">ປະເພດ</label>
+                  <input id="model-input" name="model" value={formData.model} onChange={handleChange} placeholder="e.g., Vios" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                </div>
+                <div>
+                  <label htmlFor="year-input" className="block text-sm font-medium text-gray-300 mb-1">ປີ</label>
+                  <input id="year-input" name="year" type="number" value={formData.year} onChange={handleChange} placeholder="e.g., 2024" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                </div>
+                <div>
+                  <label htmlFor="price-input" className="block text-sm font-medium text-gray-300 mb-1">ລາຄາ (USD)</label>
+                  <input id="price-input" name="price" type="text" value={formData.price === 0 ? '' : formData.price.toLocaleString()} onChange={handleChange} placeholder="e.g., 25,000" className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                </div>
+                <div>
+                  <label htmlFor="status-select" className="block text-sm font-medium text-gray-300 mb-1">ສະຖານະ</label>
+                  <select id="status-select" name="status" value={formData.status} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <option value="Available">Available</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Sold">Sold</option>
+                  </select>
+                </div>
             </div>
           </div>
         </form>
