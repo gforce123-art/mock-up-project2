@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { Message } from '../types';
+import { GoogleGenAI } from "@google/genai";
 
 const mockMessages: Message[] = [
   {
     id: 1,
-    senderName: 'ທ້າວ ສົມປอง',
+    senderName: 'ທ້າວ ສົມປອງ',
     senderEmail: 'sompong@email.com',
     subject: 'สอบถามเกี่ยวกับ Toyota Vigo',
     body: 'ສະບາຍດີ, ຂ້ອຍສົນໃຈ Toyota Vigo ປີ 2020. ລົດຍັງຢູ່ບໍ່? ສາມາດເຂົ້າມາເບິ່ງລົດໄດ້ມື້ໃດ?',
@@ -46,6 +47,7 @@ const Communication: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'new' | 'read' | 'replied'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [replyText, setReplyText] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleSelectMessage = (id: number) => {
     setSelectedMessageId(id);
@@ -80,6 +82,44 @@ const Communication: React.FC = () => {
     console.log(`Replying to message ${selectedMessageId}: ${replyText}`);
   };
 
+  const selectedMessage = messages.find(msg => msg.id === selectedMessageId);
+
+  const handleGenerateReply = async () => {
+    if (!selectedMessage) return;
+
+    setIsGenerating(true);
+    setReplyText(''); // Clear previous text
+
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        
+        const prompt = `You are a helpful and professional sales assistant for a second-hand car dealership in Laos called VTN Motor. A customer has sent the following message. Please draft a polite and helpful response in the same language as the customer's message (either Lao or English). Be friendly but professional. Keep the response concise and address their questions. Sign off with "Sincerely, VTN Motor".
+
+Customer Name: ${selectedMessage.senderName}
+Subject: ${selectedMessage.subject}
+
+Message:
+"""
+${selectedMessage.body}
+"""
+
+Draft a reply:`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+        });
+        
+        setReplyText(response.text);
+
+    } catch (error) {
+        console.error("Error generating reply:", error);
+        alert("Sorry, there was an error generating a reply. Please try again.");
+    } finally {
+        setIsGenerating(false);
+    }
+  };
+
   const filteredMessages = useMemo(() => {
     return messages
       .filter(msg => {
@@ -96,8 +136,6 @@ const Communication: React.FC = () => {
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [messages, filter, searchTerm]);
   
-  const selectedMessage = messages.find(msg => msg.id === selectedMessageId);
-
   return (
     <div className="container mx-auto text-white h-full flex flex-col">
       <h1 className="text-3xl font-bold mb-6">ຈັດການການຕິດຕໍ່</h1>
@@ -152,11 +190,12 @@ const Communication: React.FC = () => {
                     </div>
                      <div className="p-4 border-t border-gray-700">
                         <textarea
-                            value={replyText}
+                            value={isGenerating ? 'AI is thinking...' : replyText}
                             onChange={(e) => setReplyText(e.target.value)}
-                            placeholder="Type your reply here..."
+                            placeholder="Type your reply here, or generate one with AI."
                             rows={4}
                             className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                            disabled={isGenerating}
                         />
                         <div className="flex justify-between items-center">
                              <div className="space-x-2">
@@ -167,9 +206,22 @@ const Communication: React.FC = () => {
                                     <i className="fas fa-trash mr-2"></i>Delete
                                 </button>
                             </div>
-                            <button onClick={handleSendReply} className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
-                                <i className="fas fa-paper-plane mr-2"></i>Send Reply
-                            </button>
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={handleGenerateReply}
+                                    disabled={isGenerating}
+                                    className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-900 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center"
+                                >
+                                    {isGenerating ? (
+                                        <><i className="fas fa-spinner fa-spin mr-2"></i>Generating...</>
+                                    ) : (
+                                        <><i className="fas fa-wand-magic-sparkles mr-2"></i>Generate Reply</>
+                                    )}
+                                </button>
+                                <button onClick={handleSendReply} className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                                    <i className="fas fa-paper-plane mr-2"></i>Send Reply
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </>
