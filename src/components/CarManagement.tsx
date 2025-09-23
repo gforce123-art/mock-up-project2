@@ -34,7 +34,7 @@ const CarManagement: React.FC = () => {
   const [carToDelete, setCarToDelete] = useState<Car | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: SortableKeys | null; direction: 'ascending' | 'descending' }>({ key: null, direction: 'ascending' });
   const [filterStatus, setFilterStatus] = useState<'All' | 'Available' | 'Sold' | 'Pending'>('All');
-  const [filterBrand, setFilterBrand] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleAddCar = () => {
     setCarToEdit(null);
@@ -87,9 +87,11 @@ const CarManagement: React.FC = () => {
     if (filterStatus !== 'All') {
         sortableCars = sortableCars.filter(car => car.status === filterStatus);
     }
-    if (filterBrand) {
+    if (searchTerm) {
+        const lowercasedSearchTerm = searchTerm.toLowerCase();
         sortableCars = sortableCars.filter(car =>
-            car.brand.toLowerCase().includes(filterBrand.toLowerCase())
+            car.brand.toLowerCase().includes(lowercasedSearchTerm) ||
+            car.model.toLowerCase().includes(lowercasedSearchTerm)
         );
     }
 
@@ -107,7 +109,7 @@ const CarManagement: React.FC = () => {
     }
 
     return sortableCars;
-  }, [cars, filterStatus, filterBrand, sortConfig]);
+  }, [cars, filterStatus, searchTerm, sortConfig]);
 
   const renderSortArrow = (key: SortableKeys) => {
     if (sortConfig.key !== key) return null;
@@ -143,13 +145,13 @@ const CarManagement: React.FC = () => {
               </select>
           </div>
           <div className="flex items-center flex-grow">
-               <label htmlFor="brand-filter" className="text-sm font-medium mr-2 text-gray-300">ຍີ່ຫໍ້:</label>
+               <label htmlFor="search-filter" className="text-sm font-medium mr-2 text-gray-300">ຄົ້ນຫາ:</label>
               <input
-                  id="brand-filter"
+                  id="search-filter"
                   type="text"
-                  placeholder="ຄົ້ນຫາຕາມຍີ່ຫໍ້..."
-                  value={filterBrand}
-                  onChange={(e) => setFilterBrand(e.target.value)}
+                  placeholder="ຄົ້ນຫາຕາມຍີ່ຫໍ້ ຫຼື ຮຸ່ນ..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full md:w-64 bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
           </div>

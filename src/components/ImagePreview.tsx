@@ -32,7 +32,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
           onClick={() => fileInputRef.current?.click()}
           className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center"
         >
-          <i className="fas fa-upload mr-2"></i> Upload Image
+          <i className="fas fa-upload mr-2"></i> ເພີ່ມຮູບລົດ
         </button>
       </div>
       {error && <p className="text-red-400 text-sm text-center">{error}</p>}
