@@ -85,7 +85,7 @@ const initialFormState: SaleFormState = {
 const SaleFormModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  onSave: (sale: Omit<Sale, 'id' | 'carDescription' | 'customerName'> & { id?: number }) => void;
+  onSave: (sale: Omit<Sale, 'id'> & { id?: number }) => void;
   saleToEdit: Sale | null;
   cars: Car[];
   customers: Customer[];
@@ -165,14 +165,18 @@ const SaleFormModal: React.FC<{
     const selectedCustomer = customers.find(c => c.id === Number(formData.customerId));
     
     if (selectedCar && selectedCustomer) {
-        const saleData = {
-            ...formData,
+        const saleData: Omit<Sale, 'id'> & { id?: number } = {
+            id: formData.id,
             carId: Number(formData.carId),
             customerId: Number(formData.customerId),
             carDescription: `${selectedCar.brand} ${selectedCar.model} ${selectedCar.year}`,
             customerName: selectedCustomer.name,
+            saleDate: formData.saleDate,
             salePrice: Number(formData.salePrice),
+            paymentStatus: formData.paymentStatus,
             depositAmount: formData.depositAmount ? Number(formData.depositAmount) : undefined,
+            depositDate: formData.depositDate || undefined,
+            installments: formData.installments,
         };
         onSave(saleData);
     }
