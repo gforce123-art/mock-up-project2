@@ -58,51 +58,56 @@ const mockSales: Sale[] = [
   }
 ];
 
+type SaleFormState = {
+  id?: number;
+  carId: string;
+  customerId: string;
+  saleDate: string;
+  salePrice: string;
+  paymentStatus: Sale['paymentStatus'];
+  depositAmount: string;
+  depositDate: string;
+  installments: Installment[];
+};
+
+const initialFormState: SaleFormState = {
+  carId: '',
+  customerId: '',
+  saleDate: new Date().toISOString().split('T')[0],
+  salePrice: '',
+  paymentStatus: 'Pending Deposit',
+  depositAmount: '',
+  depositDate: '',
+  installments: [],
+};
+
 // Sub-component for the Add/Edit Sale Modal
 const SaleFormModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  onSave: (sale: Omit<Sale, 'id'> & { id?: number }) => void;
+  onSave: (sale: Omit<Sale, 'id' | 'carDescription' | 'customerName'> & { id?: number }) => void;
   saleToEdit: Sale | null;
   cars: Car[];
   customers: Customer[];
 }> = ({ isOpen, onClose, onSave, saleToEdit, cars, customers }) => {
-  const [formData, setFormData] = useState<any>({
-    carId: '',
-    customerId: '',
-    saleDate: new Date().toISOString().split('T')[0],
-    salePrice: '',
-    paymentStatus: 'Pending Deposit',
-    depositAmount: '',
-    depositDate: '',
-    installments: [],
-  });
+  const [formData, setFormData] = useState<SaleFormState>(initialFormState);
 
   useEffect(() => {
     if (isOpen) {
       if (saleToEdit) {
         setFormData({
           id: saleToEdit.id,
-          carId: saleToEdit.carId,
-          customerId: saleToEdit.customerId,
+          carId: String(saleToEdit.carId),
+          customerId: String(saleToEdit.customerId),
           saleDate: saleToEdit.saleDate,
-          salePrice: saleToEdit.salePrice,
+          salePrice: String(saleToEdit.salePrice),
           paymentStatus: saleToEdit.paymentStatus,
-          depositAmount: saleToEdit.depositAmount || '',
+          depositAmount: String(saleToEdit.depositAmount || ''),
           depositDate: saleToEdit.depositDate || '',
           installments: saleToEdit.installments ? JSON.parse(JSON.stringify(saleToEdit.installments)) : [], // Deep copy
         });
       } else {
-        setFormData({
-          carId: '',
-          customerId: '',
-          saleDate: new Date().toISOString().split('T')[0],
-          salePrice: '',
-          paymentStatus: 'Pending Deposit',
-          depositAmount: '',
-          depositDate: '',
-          installments: [],
-        });
+        setFormData(initialFormState);
       }
     }
   }, [saleToEdit, isOpen]);
@@ -114,7 +119,7 @@ const SaleFormModal: React.FC<{
         if (name === 'carId' && !saleToEdit) {
             const selectedCar = cars.find(c => c.id === Number(value));
             if (selectedCar) {
-                newFormData.salePrice = selectedCar.price;
+                newFormData.salePrice = String(selectedCar.price);
             }
         }
         return newFormData;
@@ -123,7 +128,7 @@ const SaleFormModal: React.FC<{
   
   const handleInstallmentChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => {
+    setFormData((prev) => {
       const newInstallments = [...prev.installments];
       const updatedInstallment = { ...newInstallments[index], [name]: name === 'amount' ? Number(value) : value };
 
@@ -141,14 +146,14 @@ const SaleFormModal: React.FC<{
   };
 
   const addInstallment = () => {
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       installments: [...prev.installments, { dueDate: '', amount: 0, status: 'Pending' }]
     }));
   };
 
   const removeInstallment = (index: number) => {
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       installments: prev.installments.filter((_: any, i: number) => i !== index)
     }));
@@ -162,6 +167,8 @@ const SaleFormModal: React.FC<{
     if (selectedCar && selectedCustomer) {
         const saleData = {
             ...formData,
+            carId: Number(formData.carId),
+            customerId: Number(formData.customerId),
             carDescription: `${selectedCar.brand} ${selectedCar.model} ${selectedCar.year}`,
             customerName: selectedCustomer.name,
             salePrice: Number(formData.salePrice),
