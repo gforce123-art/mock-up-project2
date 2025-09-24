@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Sale, Car, Customer, Installment } from '../types';
 import ConfirmationModal from './ConfirmationModal';
+import SaleDetailModal from './SaleDetailModal';
 
 // Mock data for component self-containment
 const mockCars: Car[] = [
@@ -57,6 +58,29 @@ const mockSales: Sale[] = [
   }
 ];
 
+type SaleFormState = {
+  id?: number;
+  carId: string;
+  customerId: string;
+  saleDate: string;
+  salePrice: string;
+  paymentStatus: Sale['paymentStatus'];
+  depositAmount: string;
+  depositDate: string;
+  installments: Installment[];
+};
+
+const initialFormState: SaleFormState = {
+  carId: '',
+  customerId: '',
+  saleDate: new Date().toISOString().split('T')[0],
+  salePrice: '',
+  paymentStatus: 'Pending Deposit',
+  depositAmount: '',
+  depositDate: '',
+  installments: [],
+};
+
 // Sub-component for the Add/Edit Sale Modal
 const SaleFormModal: React.FC<{
   isOpen: boolean;
@@ -66,42 +90,24 @@ const SaleFormModal: React.FC<{
   cars: Car[];
   customers: Customer[];
 }> = ({ isOpen, onClose, onSave, saleToEdit, cars, customers }) => {
-  const [formData, setFormData] = useState<any>({
-    carId: '',
-    customerId: '',
-    saleDate: new Date().toISOString().split('T')[0],
-    salePrice: '',
-    paymentStatus: 'Pending Deposit',
-    depositAmount: '',
-    depositDate: '',
-    installments: [],
-  });
+  const [formData, setFormData] = useState<SaleFormState>(initialFormState);
 
   useEffect(() => {
     if (isOpen) {
       if (saleToEdit) {
         setFormData({
           id: saleToEdit.id,
-          carId: saleToEdit.carId,
-          customerId: saleToEdit.customerId,
+          carId: String(saleToEdit.carId),
+          customerId: String(saleToEdit.customerId),
           saleDate: saleToEdit.saleDate,
-          salePrice: saleToEdit.salePrice,
+          salePrice: String(saleToEdit.salePrice),
           paymentStatus: saleToEdit.paymentStatus,
-          depositAmount: saleToEdit.depositAmount || '',
+          depositAmount: String(saleToEdit.depositAmount || ''),
           depositDate: saleToEdit.depositDate || '',
           installments: saleToEdit.installments ? JSON.parse(JSON.stringify(saleToEdit.installments)) : [], // Deep copy
         });
       } else {
-        setFormData({
-          carId: '',
-          customerId: '',
-          saleDate: new Date().toISOString().split('T')[0],
-          salePrice: '',
-          paymentStatus: 'Pending Deposit',
-          depositAmount: '',
-          depositDate: '',
-          installments: [],
-        });
+        setFormData(initialFormState);
       }
     }
   }, [saleToEdit, isOpen]);
@@ -113,7 +119,7 @@ const SaleFormModal: React.FC<{
         if (name === 'carId' && !saleToEdit) {
             const selectedCar = cars.find(c => c.id === Number(value));
             if (selectedCar) {
-                newFormData.salePrice = selectedCar.price;
+                newFormData.salePrice = String(selectedCar.price);
             }
         }
         return newFormData;
@@ -122,7 +128,7 @@ const SaleFormModal: React.FC<{
   
   const handleInstallmentChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => {
+    setFormData((prev) => {
       const newInstallments = [...prev.installments];
       const updatedInstallment = { ...newInstallments[index], [name]: name === 'amount' ? Number(value) : value };
 
@@ -140,14 +146,14 @@ const SaleFormModal: React.FC<{
   };
 
   const addInstallment = () => {
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       installments: [...prev.installments, { dueDate: '', amount: 0, status: 'Pending' }]
     }));
   };
 
   const removeInstallment = (index: number) => {
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       installments: prev.installments.filter((_: any, i: number) => i !== index)
     }));
@@ -159,12 +165,18 @@ const SaleFormModal: React.FC<{
     const selectedCustomer = customers.find(c => c.id === Number(formData.customerId));
     
     if (selectedCar && selectedCustomer) {
-        const saleData = {
-            ...formData,
+        const saleData: Omit<Sale, 'id'> & { id?: number } = {
+            id: formData.id,
+            carId: Number(formData.carId),
+            customerId: Number(formData.customerId),
             carDescription: `${selectedCar.brand} ${selectedCar.model} ${selectedCar.year}`,
             customerName: selectedCustomer.name,
+            saleDate: formData.saleDate,
             salePrice: Number(formData.salePrice),
+            paymentStatus: formData.paymentStatus,
             depositAmount: formData.depositAmount ? Number(formData.depositAmount) : undefined,
+            depositDate: formData.depositDate || undefined,
+            installments: formData.installments,
         };
         onSave(saleData);
     }
@@ -281,6 +293,7 @@ const SalesManagement: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [saleToEdit, setSaleToEdit] = useState<Sale | null>(null);
     const [saleToDelete, setSaleToDelete] = useState<Sale | null>(null);
+    const [saleToView, setSaleToView] = useState<Sale | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [filterDepositStatus, setFilterDepositStatus] = useState('All');
@@ -477,6 +490,7 @@ const SalesManagement: React.FC = () => {
                                 <td className="p-4 whitespace-nowrap">{getInstallmentProgressInfo(sale)}</td>
                                 <td className="p-4"><span className={`px-3 py-1 text-xs font-semibold rounded-full ${getPaymentStatusBadge(sale.paymentStatus)}`}>{sale.paymentStatus}</span></td>
                                 <td className="p-4 flex items-center space-x-2">
+                                    <button onClick={() => setSaleToView(sale)} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-md"><i className="fas fa-eye"></i></button>
                                     <button onClick={() => handleEditSale(sale)} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md"><i className="fas fa-pencil-alt"></i></button>
                                     <button onClick={() => handleDeleteSale(sale)} className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-md"><i className="fas fa-trash"></i></button>
                                 </td>
@@ -517,6 +531,11 @@ const SalesManagement: React.FC = () => {
           </div>
         </div>
         
+        <SaleDetailModal 
+            isOpen={!!saleToView}
+            onClose={() => setSaleToView(null)}
+            sale={saleToView}
+        />
         <SaleFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveSale} saleToEdit={saleToEdit} cars={mockCars} customers={mockCustomers} />
         <ConfirmationModal 
             isOpen={isDeleteModalOpen}
