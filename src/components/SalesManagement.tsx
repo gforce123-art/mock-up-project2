@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Sale, Car, Customer, Installment } from '../types';
 import ConfirmationModal from './ConfirmationModal';
+import SaleDetailModal from './SaleDetailModal';
 
 // Mock data for component self-containment
 const mockCars: Car[] = [
@@ -281,6 +282,7 @@ const SalesManagement: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [saleToEdit, setSaleToEdit] = useState<Sale | null>(null);
     const [saleToDelete, setSaleToDelete] = useState<Sale | null>(null);
+    const [saleToView, setSaleToView] = useState<Sale | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [filterDepositStatus, setFilterDepositStatus] = useState('All');
@@ -477,6 +479,7 @@ const SalesManagement: React.FC = () => {
                                 <td className="p-4 whitespace-nowrap">{getInstallmentProgressInfo(sale)}</td>
                                 <td className="p-4"><span className={`px-3 py-1 text-xs font-semibold rounded-full ${getPaymentStatusBadge(sale.paymentStatus)}`}>{sale.paymentStatus}</span></td>
                                 <td className="p-4 flex items-center space-x-2">
+                                    <button onClick={() => setSaleToView(sale)} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-md"><i className="fas fa-eye"></i></button>
                                     <button onClick={() => handleEditSale(sale)} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md"><i className="fas fa-pencil-alt"></i></button>
                                     <button onClick={() => handleDeleteSale(sale)} className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-md"><i className="fas fa-trash"></i></button>
                                 </td>
@@ -517,6 +520,11 @@ const SalesManagement: React.FC = () => {
           </div>
         </div>
         
+        <SaleDetailModal 
+            isOpen={!!saleToView}
+            onClose={() => setSaleToView(null)}
+            sale={saleToView}
+        />
         <SaleFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveSale} saleToEdit={saleToEdit} cars={mockCars} customers={mockCustomers} />
         <ConfirmationModal 
             isOpen={isDeleteModalOpen}
