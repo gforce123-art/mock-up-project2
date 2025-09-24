@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
+import { User } from '../types';
 
 interface LoginProps {
-    onLogin: () => void;
+    onLogin: (user: User) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -12,11 +13,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        // Simple hardcoded authentication
+        // Simple hardcoded authentication with roles
         if (username === 'admin' && password === 'password') {
             setError('');
-            onLogin();
-        } else {
+            onLogin({ username: 'Admin User', role: 'Admin' });
+        } else if (username === 'staff' && password === 'password') {
+            setError('');
+            onLogin({ username: 'Staff Member', role: 'Staff' });
+        }
+        else {
             setError('Invalid username or password');
         }
     };
@@ -48,7 +53,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="w-full mt-2 bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter 'admin'"
+                            placeholder="Enter 'admin' or 'staff'"
                         />
                     </div>
                     <div>

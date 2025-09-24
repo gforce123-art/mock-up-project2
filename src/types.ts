@@ -9,6 +9,13 @@ export type Page =
   | 'reporting'
   | 'system_maintenance';
 
+export type UserRole = 'Admin' | 'Staff';
+
+export interface User {
+  username: string;
+  role: UserRole;
+}
+
 export interface Car {
   id: number;
   brand: string;

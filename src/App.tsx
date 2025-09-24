@@ -11,10 +11,10 @@ import SystemMaintenance from './components/SystemMaintenance';
 import TopBar from './components/TopBar';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import { Page } from './types';
+import { Page, User } from './types';
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -23,19 +23,21 @@ const App: React.FC = () => {
     setIsSidebarOpen(false); // Close sidebar on navigation
   };
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
+  const handleLogin = (user: User) => {
+    setCurrentUser(user);
     setCurrentPage('dashboard');
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
+    setCurrentUser(null);
   };
 
   const renderPage = useCallback(() => {
+    // Note: Access control is primarily handled by hiding UI elements in Sidebar/Dashboard.
+    // A more robust solution with routing would protect routes here.
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard setCurrentPage={handleSetCurrentPage} />;
+        return <Dashboard setCurrentPage={handleSetCurrentPage} currentUser={currentUser!} />;
       case 'car_management':
         return <CarManagement />;
       case 'sales_management':
@@ -49,19 +51,21 @@ const App: React.FC = () => {
       case 'reporting':
         return <Reporting />;
       case 'system_maintenance':
-        return <SystemMaintenance />;
+        // Only render if admin, though the link wouldn't be visible anyway.
+        return currentUser?.role === 'Admin' ? <SystemMaintenance /> : <Dashboard setCurrentPage={handleSetCurrentPage} currentUser={currentUser!} />;
       default:
-        return <Dashboard setCurrentPage={handleSetCurrentPage} />;
+        return <Dashboard setCurrentPage={handleSetCurrentPage} currentUser={currentUser!} />;
     }
-  }, [currentPage]);
+  }, [currentPage, currentUser]);
 
-  if (!isAuthenticated) {
+  if (!currentUser) {
     return <Login onLogin={handleLogin} />;
   }
 
   return (
     <div className="flex h-screen bg-gray-900 font-sans text-gray-100">
       <Sidebar 
+        currentUser={currentUser}
         currentPage={currentPage} 
         setCurrentPage={handleSetCurrentPage} 
         isOpen={isSidebarOpen}

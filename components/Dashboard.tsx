@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Page } from '../types';
+import { Page, User } from '../types';
 import CarIcon from './icons/CarIcon';
 import ShoppingCartIcon from './icons/ShoppingCartIcon';
 import UserIcon from './icons/UserIcon';
@@ -10,6 +10,7 @@ import SettingsIcon from './icons/SettingsIcon';
 
 interface DashboardProps {
   setCurrentPage: (page: Page) => void;
+  currentUser: User;
 }
 
 interface ModuleCardProps {
@@ -35,7 +36,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ id, title, description, icon, c
 );
 
 
-const Dashboard: React.FC<DashboardProps> = ({ setCurrentPage }) => {
+const Dashboard: React.FC<DashboardProps> = ({ setCurrentPage, currentUser }) => {
     const modules = [
         { id: 'car_management' as Page, title: '1. ຈັດການຂໍ້ມູນລົດ', description: 'ເພີ່ມ, ແກ້ໄຂ, ແລະ ລຶບຂໍ້ມູນລົດ', icon: <CarIcon className="w-7 h-7 text-white"/>, color: 'bg-green-500' },
         { id: 'sales_management' as Page, title: '2. ຈັດການການຂາຍ', description: 'ບັນທຶກການຂາຍ ແລະ ຕິດຕາມການຈ່າຍເງິນ', icon: <ShoppingCartIcon className="w-7 h-7 text-white"/>, color: 'bg-blue-500' },
@@ -43,8 +44,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentPage }) => {
         { id: 'payment_management' as Page, title: '4. ການຊຳລະເງິນຄ່າລົດ', description: 'ຕິດຕາມການຊຳລະຄ่างວດ ແລະ ການວາງເງິນມັດຈຳ', icon: <ChartIcon className="w-7 h-7 text-white"/>, color: 'bg-purple-500' },
         { id: 'communication' as Page, title: '5. ຈັດການການຕິດຕໍ່', description: 'ຕອບຄຳຖາມ ແລະ ຕິດຕາມຫຼັງການຂາຍ', icon: <CommentIcon className="w-7 h-7 text-white"/>, color: 'bg-yellow-500' },
         { id: 'reporting' as Page, title: '6. ລາຍງານ ແລະ ວິເຄາະ', description: 'ສະຫຼຸບຍອດຂາຍ ແລະ ວິເຄາະຂໍ້ມູນ', icon: <ChartIcon className="w-7 h-7 text-white"/>, color: 'bg-red-500' },
-        { id: 'system_maintenance' as Page, title: '7. ບຳລຸງລະບົບ', description: 'ສຳຮອງຂໍ້ມູນ ແລະ ອັບເດດລະບົບ', icon: <SettingsIcon className="w-7 h-7 text-white"/>, color: 'bg-gray-600' },
+        { id: 'system_maintenance' as Page, title: '7. ບຳລຸງລະບົບ', description: 'ສຳຮອງຂໍ້ມູນ ແລະ ອັບເດດລະບົບ', icon: <SettingsIcon className="w-7 h-7 text-white"/>, color: 'bg-gray-600', adminOnly: true },
     ];
+
+    const visibleModules = modules.filter(m => !m.adminOnly || currentUser.role === 'Admin');
 
     return (
         <div className="text-white">
@@ -63,7 +66,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentPage }) => {
             </header>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {modules.map(m => <ModuleCard key={m.id} {...m} onClick={setCurrentPage} />)}
+                {visibleModules.map(m => <ModuleCard key={m.id} {...m} onClick={setCurrentPage} />)}
             </div>
         </div>
     );

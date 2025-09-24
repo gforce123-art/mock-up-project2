@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Page } from '../types';
+import { Page, User } from '../types';
 import CarIcon from './icons/CarIcon';
 import ShoppingCartIcon from './icons/ShoppingCartIcon';
 import UserIcon from './icons/UserIcon';
@@ -10,6 +10,7 @@ import SettingsIcon from './icons/SettingsIcon';
 import LogoutIcon from './icons/LogoutIcon';
 
 interface SidebarProps {
+  currentUser: User;
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
   isOpen: boolean;
@@ -24,7 +25,7 @@ const DashboardIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, setIsOpen, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentUser, currentPage, setCurrentPage, isOpen, setIsOpen, onLogout }) => {
   const navItems = [
     { id: 'dashboard', label: 'ພາບລວມ', icon: <DashboardIcon className="w-5 h-5" /> },
     { id: 'car_management', label: 'ຈັດການຂໍ້ມູນລົດ', icon: <CarIcon className="w-5 h-5" /> },
@@ -33,8 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, 
     { id: 'payment_management', label: 'ການຊຳລະເງິນຄ່າລົດ', icon: <ChartIcon className="w-5 h-5" /> },
     { id: 'communication', label: 'ຈັດການການຕິດຕໍ່', icon: <CommentIcon className="w-5 h-5" /> },
     { id: 'reporting', label: 'ລາຍງານ ແລະ ວິເຄາະ', icon: <ChartIcon className="w-5 h-5" /> },
-    { id: 'system_maintenance', label: 'ບຳລຸງລະບົບ', icon: <SettingsIcon className="w-5 h-5" /> },
+    { id: 'system_maintenance', label: 'ບຳລຸງລະບົບ', icon: <SettingsIcon className="w-5 h-5" />, adminOnly: true },
   ];
+
+  const visibleNavItems = navItems.filter(item => !item.adminOnly || currentUser.role === 'Admin');
 
   const getNavItemClass = (page?: Page) => {
     return `flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors duration-200 ${
@@ -71,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, 
           <h1 className="text-xl font-bold text-white">VTN Motor</h1>
         </div>
         <nav className="flex-1 space-y-2">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <a
               key={item.id}
               href="#"
@@ -87,6 +90,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, 
           ))}
         </nav>
         <div className="mt-auto">
+            <div className="px-4 py-3 my-2 border-t border-b border-gray-700/50">
+                <p className="font-semibold text-white">{currentUser.username}</p>
+                <p className="text-sm text-gray-400">{currentUser.role}</p>
+            </div>
            <a
               href="#"
               onClick={(e) => {
