@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Car } from '../types';
 import CarFormModal from './CarFormModal';
 import ConfirmationModal from './ConfirmationModal';
@@ -36,6 +36,7 @@ const CarManagement: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<{ key: SortableKeys | null; direction: 'ascending' | 'descending' }>({ key: null, direction: 'ascending' });
   const [filterStatus, setFilterStatus] = useState<'All' | 'Available' | 'Sold' | 'Pending'>('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const nextId = useRef(mockCars.length > 0 ? Math.max(...mockCars.map(c => c.id)) + 1 : 1);
 
   const handleAddCar = () => {
     setCarToEdit(null);
@@ -66,8 +67,9 @@ const CarManagement: React.FC = () => {
     } else { // Adding new car
       const newCar: Car = {
         ...carData,
-        id: cars.length > 0 ? Math.max(...cars.map(c => c.id)) + 1 : 1, // simple id generation
+        id: nextId.current,
       };
+      nextId.current++;
       setCars([newCar, ...cars]);
     }
     setIsModalOpen(false);
