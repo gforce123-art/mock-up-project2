@@ -1,6 +1,34 @@
 import React, { useState, useMemo } from 'react';
 import { Message } from '../types';
-import { GoogleGenAI } from "@google/genai";
+// Fix: Import GenerateContentResponse for explicit typing of the API response.
+import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+
+// Helper function to group messages by date
+const formatDateGroup = (date: Date): string => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const messageDate = new Date(date);
+
+    // Compare year, month, and day to avoid timezone issues
+    const isToday = today.getFullYear() === messageDate.getFullYear() &&
+                    today.getMonth() === messageDate.getMonth() &&
+                    today.getDate() === messageDate.getDate();
+
+    const isYesterday = yesterday.getFullYear() === messageDate.getFullYear() &&
+                        yesterday.getMonth() === messageDate.getMonth() &&
+                        yesterday.getDate() === messageDate.getDate();
+
+    if (isToday) {
+        return 'Today';
+    }
+    if (isYesterday) {
+        return 'Yesterday';
+    }
+    return messageDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
 
 const mockMessages: Message[] = [
   {
@@ -9,7 +37,7 @@ const mockMessages: Message[] = [
     senderEmail: 'sompong@email.com',
     subject: 'สอบถามเกี่ยวกับ Toyota Vigo',
     body: 'ສະບາຍດີ, ຂ້ອຍສົນໃຈ Toyota Vigo ປີ 2020. ລົດຍັງຢູ່ບໍ່? ສາມາດເຂົ້າມາເບິ່ງລົດໄດ້ມື້ໃດ?',
-    timestamp: '2024-07-29T10:30:00Z',
+    timestamp: new Date().toISOString(),
     status: 'new',
   },
   {
@@ -18,7 +46,7 @@ const mockMessages: Message[] = [
     senderEmail: 'mala@email.com',
     subject: 'ຕ້ອງການຂໍ້ມູນເພີ່ມເຕີມກ່ຽວກັບ Honda CR-V',
     body: 'ລົດ Honda CR-V ປີ 2019 ເປັນລົດມືດຽວບໍ່? ເຄີຍຕຳມາບໍ່? ขอຮູບເພີ່ມເຕີມແດ່.',
-    timestamp: '2024-07-29T09:15:00Z',
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
     status: 'read',
   },
   {
@@ -48,6 +76,9 @@ const Communication: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [replyText, setReplyText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Fix: Defined a typed array for filter options to ensure type safety and resolve the .map error.
+  const filterOptions: ('all' | 'new' | 'read' | 'replied')[] = ['all', 'new', 'read', 'replied'];
 
   const handleSelectMessage = (id: number) => {
     setSelectedMessageId(id);
@@ -105,7 +136,8 @@ ${selectedMessage.body}
 
 Draft a reply:`;
 
-        const response = await ai.models.generateContent({
+        // Fix: Explicitly type the response from generateContent for better type safety.
+        const response: GenerateContentResponse = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
         });
@@ -114,7 +146,7 @@ Draft a reply:`;
 
     } catch (error) {
         console.error("Error generating reply:", error);
-        alert("Sorry, there was an error generating a reply. Please try again.");
+        setReplyText("Sorry, there was an error generating a reply. Please try again or write one manually.");
     } finally {
         setIsGenerating(false);
     }
@@ -136,6 +168,18 @@ Draft a reply:`;
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [messages, filter, searchTerm]);
   
+  const groupedMessages = useMemo(() => {
+    const groups: { [key: string]: Message[] } = {};
+    filteredMessages.forEach(message => {
+        const groupKey = formatDateGroup(new Date(message.timestamp));
+        if (!groups[groupKey]) {
+            groups[groupKey] = [];
+        }
+        groups[groupKey].push(message);
+    });
+    return groups;
+  }, [filteredMessages]);
+
   return (
     <div className="container mx-auto text-white h-full flex flex-col">
       <h1 className="text-3xl font-bold mb-6">ຈັດການການຕິດຕໍ່</h1>
@@ -151,28 +195,50 @@ Draft a reply:`;
               className="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
             />
              <div className="flex justify-around mt-3">
-                {['all', 'new', 'read', 'replied'].map(f => (
-                    <button key={f} onClick={() => setFilter(f as any)} className={`px-3 py-1 text-sm rounded-full capitalize ${filter === f ? 'bg-yellow-600 text-white' : 'bg-gray-700 hover:bg-gray-600'}`}>{f}</button>
+                {/* Fix: Use the typed array for mapping to prevent potential type errors and remove `as any`. */}
+                {filterOptions.map(f => (
+                    <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 text-sm rounded-full capitalize ${filter === f ? 'bg-yellow-600 text-white' : 'bg-gray-700 hover:bg-gray-600'}`}>{f}</button>
                 ))}
             </div>
           </div>
           <div className="overflow-y-auto flex-grow">
-            {filteredMessages.map(msg => (
-              <div
-                key={msg.id}
-                onClick={() => handleSelectMessage(msg.id)}
-                className={`p-4 cursor-pointer border-b border-gray-700 hover:bg-gray-700/50 ${selectedMessageId === msg.id ? 'bg-gray-900/50' : ''}`}
-              >
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center">
-                        {msg.status === 'new' && <span className="w-3 h-3 bg-blue-500 rounded-full mr-3 flex-shrink-0"></span>}
-                        <p className={`font-bold ${msg.status === 'new' ? 'text-white' : 'text-gray-300'}`}>{msg.senderName}</p>
-                    </div>
-                    <span className="text-xs text-gray-400">{new Date(msg.timestamp).toLocaleDateString()}</span>
+            {Object.entries(groupedMessages).map(([groupTitle, msgs]) => (
+                <div key={groupTitle}>
+                    <h3 className="sticky top-0 bg-gray-800 px-4 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider z-10 border-b border-t border-gray-700">
+                        {groupTitle}
+                    </h3>
+                    {msgs.map(msg => (
+                      <div
+                        key={msg.id}
+                        onClick={() => handleSelectMessage(msg.id)}
+                        className={`p-4 cursor-pointer border-b border-gray-700 transition-colors duration-150
+                            ${selectedMessageId === msg.id ? 'bg-blue-600/30' : 'hover:bg-gray-700/50'}
+                            ${msg.status === 'new' && selectedMessageId !== msg.id ? 'bg-gray-700/40' : ''}`
+                        }
+                      >
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center flex-1 min-w-0">
+                                {msg.status === 'new' && <span className="w-2.5 h-2.5 bg-blue-500 rounded-full mr-3 flex-shrink-0"></span>}
+                                 <div className="flex-1 min-w-0">
+                                    <p className={`font-semibold truncate ${msg.status === 'new' ? 'text-white' : 'text-gray-300'}`}>{msg.senderName}</p>
+                                </div>
+                            </div>
+                            <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{new Date(msg.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+                        </div>
+                        {/* Indent content to align with sender name when unread indicator is present */}
+                        <div className={msg.status === 'new' ? 'pl-[1.375rem]' : 'pl-0'}>
+                            <p className={`text-sm mt-1 truncate font-medium ${msg.status === 'new' ? 'text-gray-200' : 'text-gray-400'}`}>{msg.subject}</p>
+                            <p className="text-xs text-gray-500 mt-1 truncate">{msg.body}</p>
+                        </div>
+                      </div>
+                    ))}
                 </div>
-                <p className={`text-sm mt-1 truncate ${msg.status === 'new' ? 'text-gray-200' : 'text-gray-400'}`}>{msg.subject}</p>
-              </div>
             ))}
+            {filteredMessages.length === 0 && (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                    <p>No messages found.</p>
+                </div>
+            )}
           </div>
         </div>
         
